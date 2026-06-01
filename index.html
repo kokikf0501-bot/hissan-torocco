@@ -1,0 +1,816 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<!-- iPadでの拡大縮小を防ぎ、タップ操作に最適化 -->
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>ひっさんトロッコ｜ひきざんクイズ</title>
+<style>
+/* ===========================================================
+   基本設定
+   =========================================================== */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent; /* iPadのタップ時の青いハイライトを消す */
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+html, body {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  font-family: "Hiragino Maru Gothic ProN", "ヒラギノ丸ゴ ProN", "Yu Gothic", sans-serif;
+  background: #0b1d3a;
+  touch-action: manipulation; /* ダブルタップズーム防止 */
+}
+
+#game {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+
+/* 画面（シーン）共通 */
+.screen {
+  position: absolute;
+  inset: 0;
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+.screen.active { display: flex; }
+
+/* ===========================================================
+   タイトル画面
+   =========================================================== */
+#titleScreen {
+  background: linear-gradient(180deg, #122a52 0%, #1c4a8a 60%, #2d6cc0 100%);
+  text-align: center;
+  color: #fff;
+  z-index: 30;
+}
+.title-logo {
+  font-size: clamp(40px, 9vw, 96px);
+  font-weight: 900;
+  letter-spacing: 2px;
+  color: #ffe14d;
+  text-shadow: 0 4px 0 #c98a00, 0 8px 18px rgba(0,0,0,.5);
+  transform: rotate(-3deg);
+  margin-bottom: 8px;
+}
+.title-sub {
+  font-size: clamp(18px, 3.5vw, 32px);
+  font-weight: 700;
+  color: #fff;
+  background: #e8513f;
+  padding: 8px 26px;
+  border-radius: 999px;
+  box-shadow: 0 4px 0 #a8331f;
+  margin-bottom: 50px;
+}
+/* タイトルに飾りのトロッコ */
+.title-cart {
+  font-size: clamp(60px, 12vw, 130px);
+  margin-bottom: 30px;
+  animation: bob 1.2s ease-in-out infinite;
+}
+@keyframes bob {
+  0%, 100% { transform: translateY(0) rotate(-2deg); }
+  50%      { transform: translateY(-14px) rotate(2deg); }
+}
+
+/* 大きなボタン共通 */
+.big-btn {
+  font-family: inherit;
+  font-size: clamp(26px, 5vw, 44px);
+  font-weight: 900;
+  color: #fff;
+  background: #34c759;
+  border: none;
+  border-radius: 20px;
+  padding: 22px 70px;
+  box-shadow: 0 7px 0 #1f8c3c, 0 10px 22px rgba(0,0,0,.4);
+  cursor: pointer;
+  transition: transform .08s, box-shadow .08s;
+}
+.big-btn:active {
+  transform: translateY(5px);
+  box-shadow: 0 2px 0 #1f8c3c, 0 4px 10px rgba(0,0,0,.4);
+}
+.big-btn.retry { background: #ffb02e; box-shadow: 0 7px 0 #c47e10, 0 10px 22px rgba(0,0,0,.4); }
+.big-btn.retry:active { box-shadow: 0 2px 0 #c47e10; }
+
+/* ===========================================================
+   プレイ画面：疑似3D空間
+   =========================================================== */
+#playScreen {
+  background: linear-gradient(180deg,
+      #0a1024 0%,      /* 上空 */
+      #16264f 38%,     /* 空 */
+      #2a4a7a 50%,     /* 地平線 */
+      #173a23 50.5%,   /* 地面（緑） */
+      #0d2415 100%);
+  perspective: 360px;             /* 奥行きの強さ */
+  perspective-origin: 50% 42%;    /* 消失点の位置（地平線あたり） */
+  overflow: hidden;
+}
+
+/* 3D空間のコンテナ */
+.world {
+  position: absolute;
+  inset: 0;
+  transform-style: preserve-3d;
+}
+
+/* --- 線路（地面）：奥から手前へ流れるストライプ --- */
+.ground {
+  position: absolute;
+  left: 50%;
+  bottom: 0;
+  width: 1600px;
+  height: 2400px;
+  margin-left: -800px;
+  transform-origin: 50% 100%;
+  transform: rotateX(78deg) translateZ(0);
+  background:
+    /* 枕木（横線）：これがスクロールして疾走感を出す */
+    repeating-linear-gradient(180deg,
+      rgba(90,60,30,0)    0px,
+      rgba(90,60,30,0)    70px,
+      rgba(120,80,40,.9)  70px,
+      rgba(120,80,40,.9)  100px),
+    /* 草地のベース */
+    linear-gradient(180deg, #2e6b3c, #1c4326);
+  animation: groundScroll 0.7s linear infinite;
+}
+@keyframes groundScroll {
+  from { background-position-y: 0px, 0px; }
+  to   { background-position-y: 100px, 0px; } /* 枕木1ピッチ分流す */
+}
+
+/* 2本のレール（中央に伸びる） */
+.rail {
+  position: absolute;
+  left: 50%;
+  bottom: 0;
+  width: 14px;
+  height: 2400px;
+  transform-origin: 50% 100%;
+  background: linear-gradient(90deg, #b9c4cc, #6e7d87, #b9c4cc);
+  box-shadow: 0 0 6px rgba(255,255,255,.3);
+}
+.rail.left  { transform: rotateX(78deg) translateX(-90px); }
+.rail.right { transform: rotateX(78deg) translateX(76px); }
+
+/* 速度感を出すための流れる横スピード線 */
+.speedlines {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(circle at 50% 42%, transparent 30%, rgba(0,0,0,.0) 31%);
+}
+.speedlines::before {
+  content: "";
+  position: absolute;
+  left: 50%; top: 42%;
+  width: 4px; height: 4px;
+  box-shadow:
+    -200px 80px 0 1px rgba(255,255,255,.25),
+     220px 120px 0 1px rgba(255,255,255,.25),
+    -320px 200px 0 2px rgba(255,255,255,.2),
+     360px 240px 0 2px rgba(255,255,255,.2);
+  animation: zoom 0.6s linear infinite;
+}
+@keyframes zoom {
+  from { transform: scale(.4); opacity: .2; }
+  to   { transform: scale(2.6); opacity: 0; }
+}
+
+/* --- 分岐の看板（左右の選択肢）：奥から手前へ迫ってくる --- */
+.choices {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  pointer-events: none;
+}
+.choice {
+  position: absolute;
+  top: 30%;
+  width: 150px;
+  height: 150px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 60px;
+  font-weight: 900;
+  color: #fff;
+  border-radius: 18px;
+  border: 6px solid #fff;
+  box-shadow: 0 8px 26px rgba(0,0,0,.5);
+  /* 奥（小さく）から手前（大きく）へ迫る */
+  animation: approach 2.6s linear forwards;
+}
+.choice.left  { left: 26%;  background: #2f7ed8; }
+.choice.right { right: 26%; background: #d8482f; }
+
+@keyframes approach {
+  0%   { transform: translateY(-40px) scale(0.18); opacity: 0; }
+  15%  { opacity: 1; }
+  100% { transform: translateY(60px) scale(1.25); opacity: 1; }
+}
+
+/* --- トロッコ（一人称視点なので手前下に少しだけ見せる） --- */
+.cart {
+  position: absolute;
+  left: 50%;
+  bottom: -20px;
+  transform: translateX(-50%);
+  font-size: clamp(90px, 22vw, 200px);
+  filter: drop-shadow(0 -6px 10px rgba(0,0,0,.5));
+  z-index: 5;
+  animation: cartShake 0.25s linear infinite;
+}
+@keyframes cartShake {
+  0%,100% { transform: translateX(-50%) translateY(0) rotate(0deg); }
+  25%     { transform: translateX(-51%) translateY(-3px) rotate(-1deg); }
+  75%     { transform: translateX(-49%) translateY(-3px) rotate(1deg); }
+}
+
+/* ===========================================================
+   HUD（問題・スコア）
+   =========================================================== */
+.hud {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 10;
+}
+/* 問題表示 */
+.question {
+  position: absolute;
+  top: 18px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(255,255,255,.95);
+  color: #173a23;
+  font-size: clamp(34px, 7vw, 64px);
+  font-weight: 900;
+  padding: 10px 34px;
+  border-radius: 16px;
+  box-shadow: 0 6px 0 rgba(0,0,0,.25);
+  white-space: nowrap;
+}
+/* スコア（連続正解数） */
+.score {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  background: #ffe14d;
+  color: #7a4b00;
+  font-size: clamp(18px, 3.5vw, 28px);
+  font-weight: 900;
+  padding: 8px 18px;
+  border-radius: 14px;
+  box-shadow: 0 4px 0 rgba(0,0,0,.25);
+}
+.score .num { font-size: 1.5em; }
+
+/* 制限時間バー（10秒で減っていく） */
+.timer-wrap {
+  position: absolute;
+  top: 92px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: min(70%, 560px);
+  height: 18px;
+  background: rgba(0,0,0,.4);
+  border: 2px solid rgba(255,255,255,.7);
+  border-radius: 12px;
+  overflow: hidden;
+}
+.timer-bar {
+  width: 100%;
+  height: 100%;
+  border-radius: 10px;
+  background: linear-gradient(90deg, #34c759, #ffe14d);
+}
+/* 残り時間が少ないと赤く点滅 */
+.timer-bar.danger {
+  background: linear-gradient(90deg, #ff4d4d, #ff9a3d);
+  animation: timerBlink .35s ease-in-out infinite;
+}
+@keyframes timerBlink { 50% { opacity: .45; } }
+
+/* 「どっち！？」のあおり */
+.prompt-go {
+  position: absolute;
+  bottom: 30%;
+  left: 50%;
+  transform: translateX(-50%);
+  color: #ffe14d;
+  font-size: clamp(22px, 4.5vw, 40px);
+  font-weight: 900;
+  text-shadow: 0 3px 6px rgba(0,0,0,.6);
+  animation: blink 0.8s ease-in-out infinite;
+}
+@keyframes blink { 50% { opacity: .35; } }
+
+/* 左右のタップ領域（画面の左半分・右半分） */
+.tap-zones {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  z-index: 20;
+}
+.tap-zone {
+  flex: 1;
+  cursor: pointer;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding-bottom: 24px;
+  font-size: 50px;
+  color: rgba(255,255,255,.35);
+}
+.tap-zone:active { background: rgba(255,255,255,.08); }
+
+/* 正解時のキラッ */
+.flash-correct {
+  position: absolute; inset: 0; z-index: 25;
+  background: radial-gradient(circle at 50% 50%, rgba(120,255,150,.5), transparent 60%);
+  opacity: 0; pointer-events: none;
+}
+.flash-correct.show { animation: flashOk .45s ease-out; }
+@keyframes flashOk { 0%{opacity:1;} 100%{opacity:0;} }
+
+/* ===========================================================
+   背景の禍々しさ（3問ごとにステップアップ）
+   tier-0: さわやかな昼 → tier-3: 地獄のような赤
+   =========================================================== */
+/* tier-0 はデフォルトの #playScreen 背景（青空＋草原） */
+
+/* tier-1（4〜6問目）：夕暮れ・少し不穏 */
+#playScreen.tier-1 {
+  background: linear-gradient(180deg,
+    #1a0f2e 0%, #3a1f50 38%, #6a3a6a 50%, #3a2a1a 50.5%, #1a1208 100%);
+}
+#playScreen.tier-1 .ground {
+  background:
+    repeating-linear-gradient(180deg,
+      rgba(60,40,20,0) 0px, rgba(60,40,20,0) 70px,
+      rgba(90,55,30,.9) 70px, rgba(90,55,30,.9) 100px),
+    linear-gradient(180deg, #4a3a2a, #2a1f14);
+}
+
+/* tier-2（7〜9問目）：夜・紫の毒気 */
+#playScreen.tier-2 {
+  background: linear-gradient(180deg,
+    #0a0014 0%, #2a0a3a 38%, #4a0a4a 50%, #2a0a2a 50.5%, #10040c 100%);
+}
+#playScreen.tier-2 .ground {
+  background:
+    repeating-linear-gradient(180deg,
+      rgba(40,10,40,0) 0px, rgba(40,10,40,0) 70px,
+      rgba(80,20,70,.9) 70px, rgba(80,20,70,.9) 100px),
+    linear-gradient(180deg, #3a1040, #1a0820);
+}
+#playScreen.tier-2 .rail { background: linear-gradient(90deg,#c08ad8,#5a2a6e,#c08ad8); }
+
+/* tier-3（10問目・ラスボス）：地獄の赤・脈打つ赤い光 */
+#playScreen.tier-3 {
+  background: linear-gradient(180deg,
+    #1a0000 0%, #5a0a00 38%, #8a0f00 50%, #3a0500 50.5%, #150000 100%);
+  animation: hellPulse 1.1s ease-in-out infinite;
+}
+#playScreen.tier-3 .ground {
+  background:
+    repeating-linear-gradient(180deg,
+      rgba(60,0,0,0) 0px, rgba(60,0,0,0) 70px,
+      rgba(120,20,0,.95) 70px, rgba(120,20,0,.95) 100px),
+    linear-gradient(180deg, #6a1000, #2a0500);
+}
+#playScreen.tier-3 .rail { background: linear-gradient(90deg,#ff8a5a,#8a2a00,#ff8a5a); }
+@keyframes hellPulse {
+  0%,100% { filter: brightness(1) saturate(1); }
+  50%     { filter: brightness(1.35) saturate(1.6); }
+}
+
+/* ===========================================================
+   不正解：落下＆暗転アニメーション
+   =========================================================== */
+#playScreen.crash {
+  animation: shake 0.5s, fadeBlack 1.2s 0.5s forwards;
+}
+#playScreen.crash .cart { animation: fall 1.1s ease-in forwards; }
+@keyframes shake {
+  0%,100% { transform: translate(0,0); }
+  20% { transform: translate(-12px, 6px) rotate(-2deg); }
+  40% { transform: translate(12px, -6px) rotate(2deg); }
+  60% { transform: translate(-10px, 8px) rotate(-1deg); }
+  80% { transform: translate(10px, -4px) rotate(1deg); }
+}
+@keyframes fall {
+  0%   { transform: translateX(-50%) translateY(0) rotate(0); }
+  100% { transform: translateX(-50%) translateY(120%) rotate(60deg); opacity: 0; }
+}
+@keyframes fadeBlack {
+  from { filter: brightness(1); }
+  to   { filter: brightness(0); }
+}
+
+/* ===========================================================
+   ゲームオーバー画面
+   =========================================================== */
+#overScreen {
+  background: linear-gradient(180deg, #2a0f12 0%, #561d22 100%);
+  color: #fff;
+  text-align: center;
+  z-index: 40;
+}
+.over-title {
+  font-size: clamp(40px, 9vw, 90px);
+  font-weight: 900;
+  color: #ff6b5e;
+  text-shadow: 0 4px 0 #7a2018;
+  margin-bottom: 10px;
+}
+.over-cart { font-size: clamp(70px, 14vw, 140px); margin-bottom: 10px; animation: bob 1.2s ease-in-out infinite; }
+.result {
+  font-size: clamp(22px, 4.5vw, 38px);
+  font-weight: 700;
+  margin-bottom: 6px;
+}
+.result .big {
+  display: inline-block;
+  font-size: 1.8em;
+  font-weight: 900;
+  color: #ffe14d;
+  margin: 0 6px;
+}
+.over-correct {
+  font-size: clamp(18px, 3.5vw, 26px);
+  background: rgba(255,255,255,.12);
+  padding: 8px 20px;
+  border-radius: 12px;
+  margin: 14px 0 36px;
+}
+.over-correct b { color: #9be79b; }
+
+/* ===========================================================
+   クリア画面
+   =========================================================== */
+#clearScreen {
+  background: linear-gradient(180deg, #0d3a1a 0%, #1c8a3c 60%, #ffd23f 100%);
+  color: #fff;
+  text-align: center;
+  z-index: 40;
+}
+.clear-cart { font-size: clamp(60px, 13vw, 130px); margin-bottom: 6px; animation: bob 1.2s ease-in-out infinite; }
+.clear-title {
+  font-size: clamp(44px, 10vw, 100px);
+  font-weight: 900;
+  color: #ffe14d;
+  text-shadow: 0 4px 0 #1f8c3c, 0 8px 18px rgba(0,0,0,.5);
+  margin-bottom: 14px;
+}
+</style>
+</head>
+<body>
+<div id="game">
+
+  <!-- ============ タイトル画面 ============ -->
+  <section id="titleScreen" class="screen active">
+    <div class="title-cart">🛒💨</div>
+    <h1 class="title-logo">ひっさん<br>トロッコ</h1>
+    <div class="title-sub">2けたの ひきざん クイズ</div>
+    <button class="big-btn" id="startBtn">スタート</button>
+  </section>
+
+  <!-- ============ プレイ画面 ============ -->
+  <section id="playScreen" class="screen">
+    <!-- 疑似3D空間（線路・背景） -->
+    <div class="world">
+      <div class="ground"></div>
+      <div class="rail left"></div>
+      <div class="rail right"></div>
+    </div>
+    <div class="speedlines"></div>
+
+    <!-- 奥から迫ってくる左右の選択肢看板 -->
+    <div class="choices" id="choices"></div>
+
+    <!-- 一人称視点のトロッコ -->
+    <div class="cart">🛒</div>
+
+    <!-- HUD -->
+    <div class="hud">
+      <div class="question" id="question">18 - 5 = ?</div>
+      <div class="score">もんだい <span class="num" id="stageNum">1</span>/10</div>
+      <!-- 制限時間バー（10秒） -->
+      <div class="timer-wrap">
+        <div class="timer-bar" id="timerBar"></div>
+      </div>
+      <div class="prompt-go" id="promptGo">どっちに すすむ？</div>
+    </div>
+
+    <!-- 左右タップ領域 -->
+    <div class="tap-zones">
+      <div class="tap-zone" id="zoneLeft">👈</div>
+      <div class="tap-zone" id="zoneRight">👉</div>
+    </div>
+
+    <div class="flash-correct" id="flash"></div>
+  </section>
+
+  <!-- ============ ゲームオーバー画面 ============ -->
+  <section id="overScreen" class="screen">
+    <div class="over-cart">💥🛒</div>
+    <h2 class="over-title">ゲームオーバー</h2>
+    <p class="result">れんぞくせいかい <span class="big" id="finalScore">0</span> もん！</p>
+    <p class="over-correct" id="overCorrect"></p>
+    <button class="big-btn retry" id="retryBtn">もう いちど</button>
+  </section>
+
+  <!-- ============ クリア（ぜんもんとっぱ）画面 ============ -->
+  <section id="clearScreen" class="screen">
+    <div class="clear-cart">🎉🛒🎉</div>
+    <h2 class="clear-title">ゴール！</h2>
+    <p class="result">10もん クリア だ！<br>きみは ひっさん名人！</p>
+    <p class="result"><span class="big" id="clearScore">0</span> もん せいかい</p>
+    <button class="big-btn" id="clearRetryBtn" style="margin-top:30px;">もう いちど</button>
+  </section>
+
+</div>
+
+<script>
+/* ===========================================================
+   画面切り替えユーティリティ
+   =========================================================== */
+const screens = {
+  title: document.getElementById('titleScreen'),
+  play:  document.getElementById('playScreen'),
+  over:  document.getElementById('overScreen'),
+  clear: document.getElementById('clearScreen'),
+};
+function showScreen(name) {
+  Object.values(screens).forEach(s => s.classList.remove('active'));
+  screens[name].classList.add('active');
+}
+
+/* ===========================================================
+   ゲーム状態
+   =========================================================== */
+const TOTAL_STAGES = 10;      // 全10問のステージ式
+const TIME_LIMIT   = 10000;   // 1問あたりの制限時間（10秒）
+
+let stage = 1;          // 現在の問題番号（1〜10）
+let score = 0;          // 正解数
+let current = null;     // 現在の問題 { a, b, answer, leftVal, rightVal, correctSide }
+let locked = false;     // 演出中の入力ロック
+let timerId = null;     // 制限時間タイマー
+let dangerId = null;    // 残り時間わずかの警告タイマー
+
+const elQuestion  = document.getElementById('question');
+const elStageNum  = document.getElementById('stageNum');
+const elChoices   = document.getElementById('choices');
+const elFlash     = document.getElementById('flash');
+const elPlay      = document.getElementById('playScreen');
+const elTimerBar  = document.getElementById('timerBar');
+
+/* ===========================================================
+   問題生成ロジック（ステージ式の難易度カーブ）
+    1〜3問目 : 2桁(10〜20) − 1桁、繰り下がり なし（やさしい）
+    4〜6問目 : 2桁(10〜20) − 1桁、繰り下がり ありなし混合
+    7〜9問目 : 2桁(10〜20) − 1桁、繰り下がり あり（むずかしい）
+    10問目   : 2桁 − 2桁、繰り下がり あり（ラスボス）
+   =========================================================== */
+function makeProblem(stage) {
+  let a, b;
+
+  if (stage >= TOTAL_STAGES) {
+    // --- ラスボス：2桁 − 2桁（繰り下がりあり） ---
+    for (let t = 0; t < 300; t++) {
+      a = randInt(21, 99);
+      b = randInt(11, a - 1);
+      if ((a % 10) < (b % 10)) break; // 一の位で繰り下がりが発生する組み合わせ
+    }
+  } else {
+    // --- 2桁(10〜20) − 1桁 ---
+    let wantBorrow;
+    if (stage <= 3)      wantBorrow = false;               // 繰り下がりなし
+    else if (stage <= 6) wantBorrow = Math.random() < 0.5; // まざる
+    else                 wantBorrow = true;                // 繰り下がりあり
+
+    for (let t = 0; t < 300; t++) {
+      a = randInt(11, 20);          // 2桁は20まで
+      b = randInt(2, 9);            // 1桁
+      if (b >= a) continue;
+      const borrow = (a % 10) < b;  // aの一の位より引く数が大きい＝繰り下がり
+      if (borrow === wantBorrow) break;
+    }
+  }
+  const answer = a - b;
+
+  // --- ダミー（おてつき）選択肢を生成 ---
+  const dummy = makeDummy(a, b, answer);
+
+  // 正解とダミーを左右ランダムに配置
+  const correctSide = Math.random() < 0.5 ? 'left' : 'right';
+  const leftVal  = correctSide === 'left'  ? answer : dummy;
+  const rightVal = correctSide === 'right' ? answer : dummy;
+
+  return { a, b, answer, leftVal, rightVal, correctSide };
+}
+
+/* 小2が陥りやすいミスを意図的にダミーにする */
+function makeDummy(a, b, answer) {
+  const candidates = [];
+  const aOnes = a % 10, aTens = Math.floor(a / 10);
+  const bOnes = b % 10, bTens = Math.floor(b / 10);
+
+  // ミス1: 一の位を「大きい方-小さい方」で引いてしまう（繰り下がり無視）
+  //   例) 52-18 → 一の位 8-2=6、十の位 5-1=4 → 46
+  if (aOnes < bOnes) {
+    const wrongOnes = bOnes - aOnes;
+    const wrongTens = aTens - bTens; // 繰り下げないのでそのまま
+    if (wrongTens >= 0) candidates.push(wrongTens * 10 + wrongOnes);
+  }
+
+  // ミス2: 繰り下がりを忘れる（一の位は正しく10を借りるが十の位を減らし忘れ）
+  //   例) 52-18 → 一の位 12-8=4、十の位 5-1=4のはずが 5-1を忘れ… ここでは +10 のズレ
+  candidates.push(answer + 10);
+
+  // ミス3: 一の位だけ＋1/−1のうっかり（計算ミス）
+  candidates.push(answer + 1);
+  candidates.push(answer - 1);
+
+  // 正解と同じ・負・100以上を除外し、重複も除く
+  const valid = [...new Set(candidates)].filter(v => v !== answer && v > 0 && v < 100);
+
+  if (valid.length > 0) {
+    return valid[randInt(0, valid.length - 1)];
+  }
+  // 念のためのフォールバック（近い数字）
+  let d;
+  do { d = answer + randInt(-9, 9); } while (d === answer || d <= 0 || d >= 100);
+  return d;
+}
+
+function randInt(min, max) {
+  return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+
+/* ===========================================================
+   背景の禍々しさ（3問ごとに段階アップ）
+   =========================================================== */
+function setTier(stage) {
+  let tier;
+  if (stage <= 3)      tier = 0; // さわやかな昼
+  else if (stage <= 6) tier = 1; // 夕暮れ
+  else if (stage <= 9) tier = 2; // 夜の毒気
+  else                 tier = 3; // 地獄（ラスボス）
+  elPlay.classList.remove('tier-0', 'tier-1', 'tier-2', 'tier-3');
+  elPlay.classList.add('tier-' + tier);
+}
+
+/* ===========================================================
+   制限時間タイマー（10秒）
+   =========================================================== */
+function startTimer() {
+  clearTimers();
+  elTimerBar.classList.remove('danger');
+  // バーをいったん満タンに戻してから10秒かけて減らす
+  elTimerBar.style.transition = 'none';
+  elTimerBar.style.width = '100%';
+  void elTimerBar.offsetWidth; // 再描画を強制してアニメをやり直す
+  elTimerBar.style.transition = `width ${TIME_LIMIT}ms linear`;
+  elTimerBar.style.width = '0%';
+
+  // 残り3秒で赤く点滅させて警告
+  dangerId = setTimeout(() => elTimerBar.classList.add('danger'), TIME_LIMIT - 3000);
+  // 時間切れ → ゲームオーバー
+  timerId = setTimeout(() => {
+    if (locked) return;
+    locked = true;
+    gameOver('timeup');
+  }, TIME_LIMIT);
+}
+function clearTimers() {
+  clearTimeout(timerId);
+  clearTimeout(dangerId);
+}
+
+/* ===========================================================
+   問題の表示
+   =========================================================== */
+function nextProblem() {
+  current = makeProblem(stage);
+  locked = false;
+
+  elStageNum.textContent = stage;
+  elQuestion.textContent = `${current.a} - ${current.b} = ?`;
+  setTier(stage); // 背景の禍々しさを更新
+
+  // 看板を作り直す（approachアニメをやり直すため）
+  elChoices.innerHTML = '';
+  const left  = document.createElement('div');
+  left.className = 'choice left';
+  left.textContent = current.leftVal;
+  const right = document.createElement('div');
+  right.className = 'choice right';
+  right.textContent = current.rightVal;
+  elChoices.appendChild(left);
+  elChoices.appendChild(right);
+
+  startTimer(); // 制限時間スタート
+}
+
+/* ===========================================================
+   選択処理
+   =========================================================== */
+function choose(side) {
+  if (locked || !current) return;
+  locked = true;
+  clearTimers();
+
+  if (side === current.correctSide) {
+    // --- 正解 ---
+    score++;
+    elFlash.classList.add('show');
+    setTimeout(() => elFlash.classList.remove('show'), 450);
+
+    if (stage >= TOTAL_STAGES) {
+      // 10問すべてクリア！
+      setTimeout(winGame, 500);
+    } else {
+      stage++;
+      setTimeout(nextProblem, 350); // シームレスに次の問題へ
+    }
+  } else {
+    // --- 不正解：落下＆暗転 → ゲームオーバー ---
+    gameOver('wrong');
+  }
+}
+
+/* 失敗（不正解 or 時間切れ）→ 落下演出 → ゲームオーバー画面 */
+function gameOver(reason) {
+  clearTimers();
+  elTimerBar.style.transition = 'none'; // タイマーバーを止める
+  elPlay.classList.add('crash');
+  setTimeout(() => {
+    elPlay.classList.remove('crash');
+    document.getElementById('finalScore').textContent = score;
+    // 時間切れか不正解かで前置きを変えつつ、正しい答えを振り返り表示
+    const head = (reason === 'timeup') ? 'じかんぎれ！ ' : '';
+    document.getElementById('overCorrect').innerHTML =
+      `${head}${current.a} - ${current.b} の こたえは <b>${current.answer}</b> だよ`;
+    showScreen('over');
+  }, 1700); // shake(0.5s) + fadeBlack(1.2s)
+}
+
+/* 全問クリア */
+function winGame() {
+  clearTimers();
+  document.getElementById('clearScore').textContent = score;
+  showScreen('clear');
+}
+
+/* ===========================================================
+   ゲーム開始
+   =========================================================== */
+function startGame() {
+  stage = 1;
+  score = 0;
+  elStageNum.textContent = 1;
+  clearTimers();
+  elPlay.classList.remove('crash');
+  elTimerBar.classList.remove('danger');
+  showScreen('play');
+  nextProblem();
+}
+
+/* ===========================================================
+   イベント登録
+   =========================================================== */
+document.getElementById('startBtn').addEventListener('click', startGame);
+document.getElementById('retryBtn').addEventListener('click', startGame);
+document.getElementById('clearRetryBtn').addEventListener('click', startGame);
+document.getElementById('zoneLeft').addEventListener('click', () => choose('left'));
+document.getElementById('zoneRight').addEventListener('click', () => choose('right'));
+
+// キーボードでも操作できるように（PCでの動作確認用）
+document.addEventListener('keydown', (e) => {
+  if (!screens.play.classList.contains('active')) return;
+  if (e.key === 'ArrowLeft')  choose('left');
+  if (e.key === 'ArrowRight') choose('right');
+});
+</script>
+</body>
+</html>
