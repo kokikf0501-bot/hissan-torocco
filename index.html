@@ -58,14 +58,30 @@ html, body {
 }
 #titleScreen { text-align: center; color: #fff; z-index: 30; }
 
-/* 画面中央にのせる文字・ボタンのまとまり（コックピットより手前） */
+/* 画面中央にのせる文字・ボタンのまとまり */
 .title-content {
   position: relative;
   z-index: 10;
   display: flex;
   flex-direction: column;
   align-items: center;
-  margin-bottom: 8%;   /* コックピットの上にのせる */
+}
+/* 表紙の飾り（浮遊する算数記号） */
+.title-deco { position: absolute; inset: 0; z-index: 4; pointer-events: none; }
+.title-deco span {
+  position: absolute;
+  font-size: clamp(28px, 6vw, 56px);
+  font-weight: 900;
+  text-shadow: 0 3px 0 rgba(0,0,0,.18);
+  opacity: .9;
+  animation: decoFloat 3.2s ease-in-out infinite;
+}
+.title-deco span:nth-child(odd)  { animation-duration: 3.8s; }
+.title-deco span:nth-child(3n)   { animation-delay: -1.4s; }
+.title-deco span:nth-child(3n+1) { animation-delay: -0.7s; }
+@keyframes decoFloat {
+  0%,100% { transform: translateY(0) rotate(-6deg); }
+  50%     { transform: translateY(-16px) rotate(6deg); }
 }
 .title-badge {
   font-size: clamp(16px, 3.2vw, 28px);
@@ -102,8 +118,7 @@ html, body {
   0%, 100% { transform: translateY(0) rotate(-2deg); }
   50%      { transform: translateY(-14px) rotate(2deg); }
 }
-/* 表紙・クリアのコックピットはゆっくり待機アニメ */
-#titleScreen .cockpit,
+/* クリア画面のコックピットはゆっくり待機アニメ */
 #clearScreen .cockpit { animation: cockpitShake 1s ease-in-out infinite; }
 
 /* 大きなボタン共通 */
@@ -651,7 +666,15 @@ html, body {
   <section id="titleScreen" class="screen active scene">
     <div class="cliff left"></div>
     <div class="cliff right"></div>
-    <img class="cockpit" src="cockpit.png" alt="">
+    <!-- 表紙の飾り：ふわふわ浮かぶ算数記号 -->
+    <div class="title-deco" aria-hidden="true">
+      <span style="left:10%; top:16%; color:#ff6b5e;">＋</span>
+      <span style="left:84%; top:22%; color:#3fa9f5;">−</span>
+      <span style="left:18%; top:70%; color:#ffb02e;">×</span>
+      <span style="left:80%; top:66%; color:#34c759;">÷</span>
+      <span style="left:30%; top:30%; color:#ffe14d;">7</span>
+      <span style="left:68%; top:78%; color:#ff8af0;">5</span>
+    </div>
     <div class="title-content">
       <div class="title-badge">2けたの ひきざん</div>
       <h1 class="title-logo">ひっさん<br>トロッコ</h1>
