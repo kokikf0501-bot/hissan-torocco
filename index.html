@@ -387,6 +387,75 @@ html, body {
   text-shadow: 0 2px 3px rgba(0,0,0,.5);
 }
 
+/* ===========================================================
+   障害物・破壊演出
+   =========================================================== */
+/* 正解：ドカン！と爆破して進む */
+.blast {
+  position: absolute;
+  left: 50%; top: 47%;
+  transform: translate(-50%, -50%);
+  z-index: 6;
+  pointer-events: none;
+}
+.blast-core {
+  position: absolute; left: 0; top: 0;
+  width: 9cqw; height: 9cqw; margin: -4.5cqw 0 0 -4.5cqw;
+  border-radius: 50%;
+  background: radial-gradient(circle, #fff 0%, #ffe14d 28%, #ff8a1a 52%, rgba(255,80,0,0) 72%);
+  transform: scale(.2); opacity: 0;
+  animation: blastCore .5s ease-out forwards;
+}
+@keyframes blastCore {
+  0%   { transform: scale(.2); opacity: 1; }
+  70%  { opacity: 1; }
+  100% { transform: scale(2.8); opacity: 0; }
+}
+/* 飛び散る破片 */
+.blast-spark {
+  position: absolute; left: 0; top: 0;
+  width: 1.4cqw; height: 1.4cqw; margin: -0.7cqw;
+  border-radius: 30%;
+  background: #ffce4d;
+  transform: rotate(var(--sa)) translateY(0);
+  animation: blastSpark .55s ease-out forwards;
+}
+@keyframes blastSpark {
+  0%   { transform: rotate(var(--sa)) translateY(0) scale(1); opacity: 1; }
+  100% { transform: rotate(var(--sa)) translateY(-10cqw) scale(.2); opacity: 0; }
+}
+.boom-text {
+  position: absolute; left: 0; top: 0;
+  transform: translate(-50%,-50%) scale(0) rotate(-8deg);
+  font-size: 8cqw; font-weight: 900; color: #fff;
+  -webkit-text-stroke: 0.5cqw #d8402f;
+  text-shadow: 0 0.5cqw 0 #a8331f;
+  white-space: nowrap;
+  animation: boomPop .6s cubic-bezier(.2,1.6,.4,1) forwards;
+}
+@keyframes boomPop {
+  0%   { transform: translate(-50%,-50%) scale(0) rotate(-8deg); opacity: 1; }
+  45%  { transform: translate(-50%,-50%) scale(1.18) rotate(5deg); opacity: 1; }
+  75%  { transform: translate(-50%,-50%) scale(1) rotate(-2deg); opacity: 1; }
+  100% { transform: translate(-50%,-50%) scale(1.05) rotate(0); opacity: 0; }
+}
+/* 不正解：線路に岩が出て激突 */
+.rocks {
+  position: absolute;
+  left: 50%; top: 44%;
+  z-index: 6;
+  font-size: 9cqw;
+  pointer-events: none;
+  transform: translate(-50%,-50%) scale(.3);
+  filter: drop-shadow(0 0.4cqw 0.6cqw rgba(0,0,0,.55));
+  animation: rockHit .55s ease-in forwards;
+}
+@keyframes rockHit {
+  0%   { transform: translate(-50%,-50%) scale(.3); opacity: 0; }
+  25%  { opacity: 1; }
+  100% { transform: translate(-50%,-28%) scale(1.9); opacity: 1; }
+}
+
 /* 3D空間のコンテナ */
 .world {
   position: absolute;
@@ -1234,6 +1303,58 @@ function pullLever(side) {
   playClunk();
 }
 
+/* 爆発音（ドカン！）。strong=trueでより重いクラッシュ音 */
+function playBoom(strong) {
+  if (!audioCtx) return;
+  const t = audioCtx.currentTime;
+  const o = audioCtx.createOscillator(), g = audioCtx.createGain();
+  o.type = 'sine';
+  o.frequency.setValueAtTime(strong ? 100 : 130, t);
+  o.frequency.exponentialRampToValueAtTime(strong ? 32 : 45, t + (strong ? 0.45 : 0.33));
+  g.gain.setValueAtTime(0.0001, t);
+  g.gain.exponentialRampToValueAtTime(strong ? 0.6 : 0.45, t + 0.01);
+  g.gain.exponentialRampToValueAtTime(0.0001, t + (strong ? 0.5 : 0.38));
+  o.connect(g).connect(audioCtx.destination); o.start(t); o.stop(t + (strong ? 0.52 : 0.4));
+  // 破片ノイズ
+  const dur = strong ? 0.4 : 0.3;
+  const len = Math.floor(audioCtx.sampleRate * dur);
+  const buf = audioCtx.createBuffer(1, len, audioCtx.sampleRate);
+  const d = buf.getChannelData(0);
+  for (let i = 0; i < len; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / len, 1.4);
+  const n = audioCtx.createBufferSource(); n.buffer = buf;
+  const lp = audioCtx.createBiquadFilter(); lp.type = 'lowpass';
+  lp.frequency.setValueAtTime(2200, t); lp.frequency.exponentialRampToValueAtTime(300, t + dur);
+  const ng = audioCtx.createGain();
+  ng.gain.setValueAtTime(strong ? 0.6 : 0.45, t); ng.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+  n.connect(lp).connect(ng).connect(audioCtx.destination); n.start(t); n.stop(t + dur);
+}
+
+/* 正解：線路の岩を大砲でドカン！と破壊して進む */
+function blastObstacle() {
+  const stage = document.querySelector('.play-stage');
+  if (!stage) return;
+  const b = document.createElement('div');
+  b.className = 'blast';
+  let sparks = '';
+  for (let i = 0; i < 8; i++) sparks += `<div class="blast-spark" style="--sa:${i * 45}deg"></div>`;
+  b.innerHTML = `<div class="blast-core"></div>${sparks}<div class="boom-text">ドカン！</div>`;
+  stage.appendChild(b);
+  setTimeout(() => b.remove(), 700);
+  playBoom(false);
+}
+
+/* 不正解：線路に岩が出現して激突 */
+function showRocks() {
+  const stage = document.querySelector('.play-stage');
+  if (!stage) return;
+  const r = document.createElement('div');
+  r.className = 'rocks';
+  r.textContent = '🪨🪨🪨';
+  stage.appendChild(r);
+  setTimeout(() => r.remove(), 1500);
+  playBoom(true);
+}
+
 /* ===========================================================
    問題生成ロジック（ステージ式の難易度カーブ）
     1〜3問目 : 2桁(10〜20) − 1桁、繰り下がり なし（やさしい）
@@ -1444,6 +1565,7 @@ function choose(side) {
     score++;
     elPlay.style.setProperty('--combo', Math.min(score, 10)); // 速度計の針＆蒸気を強める
     collectGem();                                             // 宝石を1つ集める
+    blastObstacle();                                          // 岩を大砲でドカン！と破壊
     elFlash.classList.add('show');
     setTimeout(() => elFlash.classList.remove('show'), 450);
 
@@ -1467,6 +1589,7 @@ function gameOver(reason) {
   clearInterval(bossAttackId); // ボスの攻撃を止める
   bossAttackId = null;
   elTimerBar.style.transition = 'none'; // タイマーバーを止める
+  showRocks();                 // 線路に岩が出て激突（減速）
   elPlay.classList.add('crash');
   setTimeout(() => {
     elPlay.classList.remove('crash');
