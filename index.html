@@ -189,17 +189,87 @@ html, body {
    プレイ画面：疑似3D空間
    =========================================================== */
 #playScreen {
-  /* 冒険感のある青空＋渓谷の地平線 */
-  background: linear-gradient(180deg,
-      #8fd0ee 0%,      /* 高い空 */
-      #a9dbf0 28%,
-      #d6eef2 45%,     /* 地平線のもや */
-      #c9a468 47%,     /* 砂地のはじまり */
-      #8a5e34 75%,
-      #5e3d22 100%);   /* 手前の地面 */
-  perspective: 360px;             /* 奥行きの強さ */
-  perspective-origin: 50% 47%;    /* 消失点の位置（地平線あたり） */
+  background: #1a1426;   /* ぼかし背景の隙間用の暗色 */
   overflow: hidden;
+}
+
+/* image_2 のコックピット＋山道シーン（舞台） */
+.play-stage {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: min(100%, calc(100vh * 2752 / 1536));
+  aspect-ratio: 2752 / 1536;
+  container-type: size;   /* 中の要素を画像縮尺(cqw)で配置 */
+  overflow: hidden;
+  z-index: 1;
+}
+.scene-img { position:absolute; inset:0; width:100%; height:100%; }
+
+/* --- 速度計（コンボで針が右へ） 中心≈(57.4%,74.6%) --- */
+.speedo {
+  position: absolute;
+  left: 61.3%;
+  top: 72.7%;
+  width: 0;
+  height: 0;
+  z-index: 3;
+}
+.speedo-face {
+  position: absolute;
+  left: 50%; top: 50%;
+  width: 5.6cqw; height: 5.6cqw;
+  transform: translate(-50%,-50%);
+  border-radius: 50%;
+  background: #f3e7b5;     /* メーター面のクリーム色（元の針を隠す） */
+}
+.speedo-needle {
+  position: absolute;
+  left: 50%; top: 50%;
+  width: 0.7cqw;
+  height: 2.7cqw;            /* 針の長さ */
+  background: linear-gradient(#2a3a6a,#3f63b6);
+  border-radius: 0.5cqw;
+  transform-origin: 50% 100%;   /* 下端(中心)を軸に回転 */
+  transform: translate(-50%,-100%) rotate(calc(var(--combo,0) * 18deg - 60deg));
+  transition: transform .5s cubic-bezier(.3,1.4,.5,1);
+}
+.speedo-hub {
+  position: absolute;
+  left: 50%; top: 50%;
+  width: 1.4cqw; height: 1.4cqw;
+  transform: translate(-50%,-50%);
+  border-radius: 50%;
+  background: #2a3a6a;
+}
+
+/* --- 蒸気エフェクト（コンボで強まる）。コックピット上部から --- */
+.steam {
+  position: absolute;
+  left: 0; right: 0;
+  top: 66%;
+  height: 20%;
+  z-index: 2;
+  pointer-events: none;
+  opacity: calc(0.15 + var(--combo,0) * 0.085);   /* コンボで濃く */
+}
+.steam span {
+  position: absolute;
+  bottom: 0;
+  width: 6cqw; height: 6cqw;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255,255,255,.85), rgba(255,255,255,0) 70%);
+  animation: steamRise 2s ease-in infinite;
+  transform: scale(calc(0.5 + var(--combo,0) * 0.06));
+}
+.steam span:nth-child(2){ animation-duration:1.6s; animation-delay:-0.6s; }
+.steam span:nth-child(3){ animation-duration:1.8s; animation-delay:-1.0s; }
+.steam span:nth-child(4){ animation-duration:1.5s; animation-delay:-0.3s; }
+@keyframes steamRise {
+  0%   { opacity:0; transform: translateY(0) scale(.4); }
+  30%  { opacity:.9; }
+  100% { opacity:0; transform: translateY(-7cqw) scale(1.3); }
 }
 
 /* 3D空間のコンテナ */
@@ -286,30 +356,30 @@ html, body {
 }
 .choice {
   position: absolute;
-  top: 30%;
-  width: 150px;
-  height: 150px;
+  top: 20%;
+  width: 17cqw;
+  height: 17cqw;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 60px;
+  font-size: 9cqw;
   font-weight: 900;
   color: #fff;
-  border-radius: 18px;
-  border: 6px solid #fff;
-  box-shadow: 0 8px 26px rgba(0,0,0,.5);
+  border-radius: 2cqw;
+  border: 0.7cqw solid #fff;
+  box-shadow: 0 1cqw 3cqw rgba(0,0,0,.5);
   /* 奥（小さく）から手前（大きく）へ迫る */
   animation: approach 2.6s linear forwards;
 }
-.choice.left  { left: 26%;  background: #2f7ed8; }
-.choice.right { right: 26%; background: #d8482f; }
+.choice.left  { left: 23%;  background: #2f7ed8; }
+.choice.right { right: 23%; background: #d8482f; }
 /* ボスステージでは看板を下げて、ボスと重ならないようにする */
-#playScreen.boss-active .choice { top: 46%; }
+#playScreen.boss-active .choice { top: 30%; }
 
 @keyframes approach {
-  0%   { transform: translateY(-40px) scale(0.18); opacity: 0; }
+  0%   { transform: translateY(-4cqw) scale(0.18); opacity: 0; }
   15%  { opacity: 1; }
-  100% { transform: translateY(60px) scale(1.25); opacity: 1; }
+  100% { transform: translateY(6cqw) scale(1.25); opacity: 1; }
 }
 
 /* --- 渓谷の岩壁（左右から迫る峡谷）。上は空が見えるギザギザの稜線 --- */
@@ -780,33 +850,38 @@ html, body {
 
   <!-- ============ プレイ画面 ============ -->
   <section id="playScreen" class="screen">
-    <!-- 渓谷の岩壁（左右） -->
-    <div class="cliff left"></div>
-    <div class="cliff right"></div>
+    <!-- 余白を埋める、ぼかした背景 -->
+    <img class="cover-bg" src="scene.png" alt="" aria-hidden="true">
 
-    <!-- 疑似3D空間（線路・地面） -->
-    <div class="world">
-      <div class="ground"></div>
-      <div class="rail left"></div>
-      <div class="rail right"></div>
+    <!-- 画像と同じ比率の舞台（オーバーレイ位置を正確に合わせる） -->
+    <div class="play-stage">
+      <!-- コックピット＋山道のメイン画像 -->
+      <img class="scene-img" src="scene.png" alt="">
+
+      <!-- 禍々しさのムード（ボスステージで紫に） -->
+      <div class="mood"></div>
+
+      <!-- 奥から迫ってくる左右の選択肢看板 -->
+      <div class="choices" id="choices"></div>
+
+      <!-- ラスボス：P.O.C. OVERLORD（10問目だけ登場） -->
+      <img class="boss" id="boss" src="boss.png" alt="P.O.C. OVERLORD">
+      <div class="boss-fx" id="bossFx"></div>
+      <div class="boss-impact" id="bossImpact"></div>
+
+      <!-- 速度計（コンボで針が右に動く） -->
+      <div class="speedo">
+        <div class="speedo-face"></div>
+        <div class="speedo-needle" id="speedoNeedle"></div>
+        <div class="speedo-hub"></div>
+      </div>
+
+      <!-- 蒸気エフェクト（コンボで強まる） -->
+      <div class="steam" id="steam">
+        <span style="left:14%"></span><span style="left:30%"></span>
+        <span style="left:70%"></span><span style="left:86%"></span>
+      </div>
     </div>
-    <div class="speedlines"></div>
-
-    <!-- 時間帯・禍々しさのムード色（tierで変化） -->
-    <div class="mood"></div>
-
-    <!-- ラスボス：P.O.C. OVERLORD（10問目だけ登場） -->
-    <img class="boss" id="boss" src="boss.png" alt="P.O.C. OVERLORD">
-    <!-- ボスの攻撃エフェクト（こちらに飛んでくる闇の弾）の入れ物 -->
-    <div class="boss-fx" id="bossFx"></div>
-    <!-- 攻撃の着弾フラッシュ -->
-    <div class="boss-impact" id="bossImpact"></div>
-
-    <!-- 奥から迫ってくる左右の選択肢看板 -->
-    <div class="choices" id="choices"></div>
-
-    <!-- 一人称視点のトロッコ（コックピット＋手） -->
-    <img class="cockpit" id="cockpit" src="cockpit.png" alt="">
 
 
     <!-- HUD -->
@@ -1120,6 +1195,7 @@ function choose(side) {
     // --- 正解 ---
     totalTimeMs += performance.now() - qStartAt; // この問にかかった時間を合計に加える
     score++;
+    elPlay.style.setProperty('--combo', Math.min(score, 10)); // 速度計の針＆蒸気を強める
     elFlash.classList.add('show');
     setTimeout(() => elFlash.classList.remove('show'), 450);
 
@@ -1181,6 +1257,7 @@ function startGame() {
   stage = 1;
   score = 0;
   totalTimeMs = 0;                  // タイムをリセット
+  elPlay.style.setProperty('--combo', 0); // コンボ演出リセット
   elStageNum.textContent = 1;
   clearTimers();
   stopBoss();                       // ボスの状態をリセット
