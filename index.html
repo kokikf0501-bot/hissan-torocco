@@ -647,7 +647,63 @@ html, body {
   font-size: 50px;
   color: rgba(255,255,255,.35);
 }
-.tap-zone:active { background: rgba(255,255,255,.08); }
+.tap-zone:active { background: rgba(255,255,255,.06); }
+
+/* --- こたえるレバー（左右） --- */
+.lever {
+  position: relative;
+  width: clamp(72px, 9vw, 120px);
+  height: clamp(120px, 20vh, 200px);
+  margin-bottom: clamp(8px, 2vh, 30px);
+  pointer-events: none;   /* タップはゾーンが受ける */
+  filter: drop-shadow(0 6px 8px rgba(0,0,0,.45));
+}
+.lever-base {
+  position: absolute;
+  bottom: 0; left: 50%;
+  width: 78%; height: 16%;
+  transform: translateX(-50%);
+  background: linear-gradient(#525866, #2a2e36);
+  border-radius: 40% / 60%;
+  box-shadow: inset 0 3px 4px rgba(255,255,255,.15);
+}
+.lever-stick {
+  position: absolute;
+  bottom: 9%; left: 50%;
+  width: 17%; height: 82%;
+  transform-origin: 50% 100%;
+  background: linear-gradient(90deg, #6e7480, #e3e9f0 45%, #6e7480);
+  border-radius: 999px;
+}
+.lever.left  .lever-stick { transform: translateX(-50%) rotate(-13deg); }
+.lever.right .lever-stick { transform: translateX(-50%) rotate(13deg); }
+.lever-knob {
+  position: absolute;
+  top: -10%; left: 50%;
+  width: 240%; aspect-ratio: 1;
+  transform: translateX(-50%);
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: clamp(20px, 3vw, 36px);
+  color: #fff; font-weight: 900;
+  box-shadow: inset -5px -6px 10px rgba(0,0,0,.35), inset 4px 4px 8px rgba(255,255,255,.35), 0 4px 8px rgba(0,0,0,.4);
+}
+.lever.left  .lever-knob { background: radial-gradient(circle at 35% 30%, #6ea8ff, #2f6fd0); }
+.lever.right .lever-knob { background: radial-gradient(circle at 35% 30%, #ff8a7a, #d8402f); }
+
+/* ガチャン！と倒れる演出 */
+.lever.left.pull  .lever-stick { animation: leverPullL .34s cubic-bezier(.25,1.5,.5,1); }
+.lever.right.pull .lever-stick { animation: leverPullR .34s cubic-bezier(.25,1.5,.5,1); }
+@keyframes leverPullL {
+  0%   { transform: translateX(-50%) rotate(-13deg); }
+  35%  { transform: translateX(-50%) rotate(26deg); }
+  100% { transform: translateX(-50%) rotate(-13deg); }
+}
+@keyframes leverPullR {
+  0%   { transform: translateX(-50%) rotate(13deg); }
+  35%  { transform: translateX(-50%) rotate(-26deg); }
+  100% { transform: translateX(-50%) rotate(13deg); }
+}
 
 /* 正解時のキラッ */
 .flash-correct {
@@ -1012,8 +1068,18 @@ html, body {
 
     <!-- 左右タップ領域 -->
     <div class="tap-zones">
-      <div class="tap-zone" id="zoneLeft">👈</div>
-      <div class="tap-zone" id="zoneRight">👉</div>
+      <div class="tap-zone" id="zoneLeft">
+        <div class="lever left" id="leverLeft">
+          <div class="lever-base"></div>
+          <div class="lever-stick"><div class="lever-knob">◀</div></div>
+        </div>
+      </div>
+      <div class="tap-zone" id="zoneRight">
+        <div class="lever right" id="leverRight">
+          <div class="lever-base"></div>
+          <div class="lever-stick"><div class="lever-knob">▶</div></div>
+        </div>
+      </div>
     </div>
 
     <div class="flash-correct" id="flash"></div>
@@ -1111,8 +1177,50 @@ const elTimerBar  = document.getElementById('timerBar');
 const elBoss      = document.getElementById('boss');
 const elBossFx    = document.getElementById('bossFx');
 const elBossImpact= document.getElementById('bossImpact');
+const elLeverLeft = document.getElementById('leverLeft');
+const elLeverRight= document.getElementById('leverRight');
 
 let bossAttackId = null; // ボスの連続攻撃タイマー
+
+/* ===========================================================
+   効果音（Web Audioで「ガチャン！」を合成）
+   =========================================================== */
+let audioCtx = null;
+function initAudio() {
+  try {
+    if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    if (audioCtx.state === 'suspended') audioCtx.resume();
+  } catch (e) { /* 非対応でも無音で続行 */ }
+}
+function playClunk() {
+  if (!audioCtx) return;
+  const t = audioCtx.currentTime;
+  // 低い「ゴトッ」（金属の手応え）
+  const o = audioCtx.createOscillator(), g = audioCtx.createGain();
+  o.type = 'square';
+  o.frequency.setValueAtTime(180, t);
+  o.frequency.exponentialRampToValueAtTime(55, t + 0.12);
+  g.gain.setValueAtTime(0.0001, t);
+  g.gain.exponentialRampToValueAtTime(0.35, t + 0.005);
+  g.gain.exponentialRampToValueAtTime(0.0001, t + 0.2);
+  o.connect(g).connect(audioCtx.destination); o.start(t); o.stop(t + 0.22);
+  // 金属的な「カチッ」（ノイズ）
+  const len = Math.floor(audioCtx.sampleRate * 0.05);
+  const buf = audioCtx.createBuffer(1, len, audioCtx.sampleRate);
+  const d = buf.getChannelData(0);
+  for (let i = 0; i < len; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / len, 2);
+  const n = audioCtx.createBufferSource(); n.buffer = buf;
+  const hp = audioCtx.createBiquadFilter(); hp.type = 'highpass'; hp.frequency.value = 1800;
+  const ng = audioCtx.createGain();
+  ng.gain.setValueAtTime(0.3, t); ng.gain.exponentialRampToValueAtTime(0.0001, t + 0.06);
+  n.connect(hp).connect(ng).connect(audioCtx.destination); n.start(t); n.stop(t + 0.06);
+}
+/* レバーを引く演出＋ガチャン音 */
+function pullLever(side) {
+  const lev = (side === 'left') ? elLeverLeft : elLeverRight;
+  if (lev) { lev.classList.remove('pull'); void lev.offsetWidth; lev.classList.add('pull'); }
+  playClunk();
+}
 
 /* ===========================================================
    問題生成ロジック（ステージ式の難易度カーブ）
@@ -1316,6 +1424,7 @@ function choose(side) {
   if (locked || !current) return;
   locked = true;
   clearTimers();
+  pullLever(side);   // レバーをガチャン！と引く
 
   if (side === current.correctSide) {
     // --- 正解 ---
@@ -1427,6 +1536,7 @@ function winGame() {
    ゲーム開始
    =========================================================== */
 function startGame() {
+  initAudio();                      // ユーザー操作で音を有効化
   stage = 1;
   score = 0;
   totalTimeMs = 0;                  // タイムをリセット
