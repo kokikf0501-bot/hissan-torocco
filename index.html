@@ -1221,20 +1221,31 @@ html, body {
   0%,100% { transform: translate(-50%,-50%) translateY(0) rotate(-2deg); }
   50%     { transform: translate(-50%,-50%) translateY(-1.4cqw) rotate(2deg); }
 }
-/* でんせつのユニコーン（チャーム＝丸縁の額装で隣に飾る） */
+/* でんせつのユニコーン（模型） */
 .uni-mini {
-  position: absolute; left: 87%; top: 56%;
-  width: 15cqw; height: 11cqw; object-fit: cover;
+  position: absolute; left: 88%; top: 58%;
+  width: 15cqw; height: auto;
   z-index: 6; display: none; pointer-events: none;
-  transform: translate(-50%,-50%) rotate(3deg);
-  border-radius: 1.6cqw;
-  border: 0.5cqw solid #ffe14d;
-  box-shadow: 0 0.6cqw 0.8cqw rgba(0,0,0,.5), 0 0 1.2cqw rgba(255,160,255,.7);
+  transform: translate(-50%,-50%);
+  filter: drop-shadow(0 0.6cqw 0.8cqw rgba(0,0,0,.45)) drop-shadow(0 0 1cqw rgba(255,160,255,.7));
   animation: uniBob 2.8s ease-in-out infinite;
 }
 @keyframes uniBob {
-  0%,100% { transform: translate(-50%,-50%) translateY(0) rotate(3deg); }
-  50%     { transform: translate(-50%,-50%) translateY(-1.2cqw) rotate(-1deg); }
+  0%,100% { transform: translate(-50%,-50%) translateY(0) rotate(2deg); }
+  50%     { transform: translate(-50%,-50%) translateY(-1.2cqw) rotate(-2deg); }
+}
+/* でんせつの剣（コックピット上部に飾る） */
+.sword-mini {
+  position: absolute; left: 50%; top: 12%;
+  width: 30cqw; height: auto;
+  z-index: 6; display: none; pointer-events: none;
+  transform: translate(-50%,-50%) rotate(-7deg);
+  filter: drop-shadow(0 0.5cqw 0.7cqw rgba(0,0,0,.5)) drop-shadow(0 0 1cqw rgba(180,220,255,.7));
+  animation: swordBob 3.2s ease-in-out infinite;
+}
+@keyframes swordBob {
+  0%,100% { transform: translate(-50%,-50%) rotate(-7deg); }
+  50%     { transform: translate(-50%,-50%) translateY(-0.8cqw) rotate(-5deg); }
 }
 
 /* ショップ：画像アイテム＆特別景品の大カード */
@@ -1249,10 +1260,48 @@ html, body {
 .shop-card.featured .shop-img {
   filter: drop-shadow(0 0 10px rgba(150,200,255,.7));
   animation: featShine 2.2s ease-in-out infinite;
+  position: relative; z-index: 1;
 }
 @keyframes featShine {
   0%,100% { transform: scale(1) rotate(-1deg); }
   50%     { transform: scale(1.04) rotate(1deg); }
+}
+/* 特別カードの背景キラキラ（流れる光＋またたき） */
+.shop-card.featured { position: relative; overflow: hidden; }
+.shop-card.featured::before {
+  content: ""; position: absolute; inset: 0; pointer-events: none; z-index: 0;
+  background:
+    radial-gradient(2px 2px at 20% 30%, #fff, transparent),
+    radial-gradient(2px 2px at 70% 25%, #fff, transparent),
+    radial-gradient(2px 2px at 40% 70%, #fff, transparent),
+    radial-gradient(2px 2px at 85% 60%, #fff, transparent),
+    radial-gradient(2px 2px at 15% 80%, #fff, transparent);
+  opacity: .6; animation: featTwinkle 1.6s ease-in-out infinite;
+}
+.shop-card.featured::after {
+  content: ""; position: absolute; inset: 0; pointer-events: none; z-index: 0;
+  background: linear-gradient(115deg, transparent 38%, rgba(255,255,255,.28) 50%, transparent 62%);
+  transform: translateX(-120%);
+  animation: cardShine 2.8s ease-in-out infinite;
+}
+@keyframes featTwinkle { 0%,100% { opacity:.25; } 50% { opacity:.8; } }
+@keyframes cardShine { 0% { transform: translateX(-120%); } 60%,100% { transform: translateX(120%); } }
+.shop-card.featured .shop-name, .shop-card.featured .shop-buy { position: relative; z-index: 1; }
+
+/* 伝説の剣の隠し効果：正解時の斬撃エフェクト */
+.sword-slash {
+  position: absolute; left: 50%; top: 45%;
+  width: 120%; height: 2.5cqw;
+  transform: translate(-50%,-50%) rotate(-22deg);
+  background: linear-gradient(90deg, transparent, #fff 45%, #bfe6ff 55%, transparent);
+  z-index: 7; pointer-events: none; border-radius: 50%;
+  filter: drop-shadow(0 0 1cqw #9fd0ff);
+  animation: swordSlash .4s ease-out forwards;
+}
+@keyframes swordSlash {
+  0%   { opacity: 0; transform: translate(-90%,-50%) rotate(-22deg) scaleX(.2); }
+  30%  { opacity: 1; }
+  100% { opacity: 0; transform: translate(-10%,-50%) rotate(-22deg) scaleX(1.1); }
 }
 
 /* 購入演出：キラキラ→飛び出す */
@@ -1357,7 +1406,8 @@ html, body {
       <div class="shelf" id="shelf"><span class="shelf-item" id="shelfItem"></span></div>  <!-- 置物の棚 -->
       <div class="sticker" id="sticker"></div>                     <!-- ステッカー -->
       <img class="ship-mini" id="shipMini" src="spaceship.png" alt="">  <!-- スペース・ジュエル号の模型 -->
-      <img class="uni-mini" id="uniMini" src="unicorn.png" alt="">      <!-- ユニコーンのチャーム -->
+      <img class="uni-mini" id="uniMini" src="unicorn.png" alt="">      <!-- ユニコーンの模型 -->
+      <img class="sword-mini" id="swordMini" src="sword.png" alt="">   <!-- 伝説の剣 -->
     </div>
 
 
@@ -1495,8 +1545,9 @@ const SAVE_KEY = 'trocco_save_v1';
 
 // 購入できるアイテム一覧
 const SHOP = [
+  { id:'sword_special',   cat:'special', name:'でんせつの剣',         price:2000, val:'sword.png', img:true },
   { id:'ship_special',    cat:'special', name:'スペース・ジュエル号',   price:1000, val:'spaceship.png', img:true },
-  { id:'unicorn_special', cat:'special', name:'でんせつのユニコーン', price:1500, val:'unicorn.png', img:true, charm:true },
+  { id:'unicorn_special', cat:'special', name:'でんせつのユニコーン', price:1500, val:'unicorn.png', img:true },
   { id:'color_red',     cat:'color',   name:'あかいトロッコ', price:120, val:'#e8513f' },
   { id:'color_blue',    cat:'color',   name:'あおいトロッコ', price:120, val:'#2f7ed8' },
   { id:'color_gold',    cat:'color',   name:'きんのトロッコ', price:300, val:'#f4c233' },
@@ -1550,19 +1601,39 @@ function applyCosmetics() {
   const sticker = document.getElementById('sticker');
   if (st) { sticker.textContent = st.val; sticker.style.display = 'block'; }
   else sticker.style.display = 'none';
-  // 特別景品の模型（買ったら常に表示。両方並ぶ）
+  // 特別景品の模型（買ったら常に表示。並べて飾る）
   document.getElementById('shipMini').style.display = save.owned.includes('ship_special') ? 'block' : 'none';
   document.getElementById('uniMini').style.display  = save.owned.includes('unicorn_special') ? 'block' : 'none';
+  document.getElementById('swordMini').style.display = save.owned.includes('sword_special') ? 'block' : 'none';
+}
+
+/* ファンファーレ（上昇する3音＋締め） */
+function playFanfare() {
+  if (!audioCtx) return;
+  const t0 = audioCtx.currentTime;
+  const notes = [523.25, 659.25, 783.99, 1046.5]; // ド ミ ソ ド(高)
+  notes.forEach((f, i) => {
+    const t = t0 + i * 0.13;
+    const o = audioCtx.createOscillator(), g = audioCtx.createGain();
+    o.type = 'triangle'; o.frequency.setValueAtTime(f, t);
+    g.gain.setValueAtTime(0.0001, t);
+    g.gain.exponentialRampToValueAtTime(0.32, t + 0.02);
+    g.gain.exponentialRampToValueAtTime(0.0001, t + (i === 3 ? 0.5 : 0.18));
+    o.connect(g).connect(audioCtx.destination); o.start(t); o.stop(t + (i === 3 ? 0.55 : 0.2));
+  });
 }
 
 /* 特別景品 購入演出（魔法の光→飛び出してコックピットへ） */
 function playSpecialGet(item) {
+  const rainbow = (item.id === 'unicorn_special' || item.id === 'sword_special');
   const o = document.createElement('div');
-  o.className = 'ship-get' + (item.id === 'unicorn_special' ? ' rainbow' : '');
+  o.className = 'ship-get' + (rainbow ? ' rainbow' : '');
+  const msg = (item.id === 'sword_special') ? 'でんせつの剣を ゲットした！' : `${item.name} ゲット！`;
   o.innerHTML = `
     <img class="ship-get-img" src="${item.val}" alt="">
-    <div class="ship-get-text">${item.name} ゲット！</div>`;
+    <div class="ship-get-text">${msg}</div>`;
   document.body.appendChild(o);
+  playFanfare();
   const img = o.querySelector('.ship-get-img');
   // 中央でキラキラ→上へ飛び出す
   img.animate([
@@ -1746,6 +1817,16 @@ function blastObstacle() {
   stage.appendChild(b);
   setTimeout(() => b.remove(), 700);
   playBoom(false);
+}
+
+/* 伝説の剣の隠し効果：正解時に斬撃エフェクト */
+function swordSlash() {
+  const stage = document.querySelector('.play-stage');
+  if (!stage) return;
+  const s = document.createElement('div');
+  s.className = 'sword-slash';
+  stage.appendChild(s);
+  setTimeout(() => s.remove(), 450);
 }
 
 /* 不正解：線路に岩が出現して激突 */
@@ -1971,6 +2052,7 @@ function choose(side) {
     elPlay.style.setProperty('--combo', Math.min(score, 10)); // 速度計の針＆蒸気を強める
     collectGem();                                             // 宝石を1つ集める
     blastObstacle();                                          // 岩を大砲でドカン！と破壊
+    if (save.owned.includes('sword_special')) swordSlash();   // 剣を持っていたら斬撃エフェクト
     elFlash.classList.add('show');
     setTimeout(() => elFlash.classList.remove('show'), 450);
 
