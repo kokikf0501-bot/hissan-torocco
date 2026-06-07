@@ -1070,6 +1070,144 @@ html, body {
 #overScreen .clear-btn { bottom: 5%; }
 #overScreen .clear-btn.home  { left: 32%; }
 #overScreen .clear-btn.retry { left: 50.5%; }
+
+/* ===========================================================
+   ジュエル（通貨）＆ショップ
+   =========================================================== */
+.jewel-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(20,12,30,.55);
+  color: #fff;
+  font-weight: 900;
+  font-size: clamp(18px, 3.4vw, 28px);
+  padding: 6px 16px 6px 10px;
+  border-radius: 14px;
+  box-shadow: 0 4px 0 rgba(0,0,0,.25);
+}
+.jewel-pill .jewel-amount::before { content: ""; }
+/* タイトルのジュエル残高（右上） */
+.title-jewel { position: absolute; top: 16px; right: 16px; z-index: 12; }
+/* プレイ中のジュエル残高（左上・宝石カウンターの下） */
+.play-jewel { position: absolute; top: 62px; left: 16px; }
+
+/* タイトルのショップボタン */
+.shop-open {
+  position: absolute;
+  bottom: calc(7% - 76px);
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 10;
+  background: #ffb02e;
+  box-shadow: 0 7px 0 #c47e10, 0 10px 22px rgba(0,0,0,.4);
+  font-size: clamp(20px, 3.6vw, 32px);
+  padding: 16px 44px;
+}
+.shop-open:active { box-shadow: 0 2px 0 #c47e10; transform: translateX(-50%) translateY(5px); }
+
+/* ショップ画面 */
+#shopScreen {
+  background: linear-gradient(180deg, #2a1b4a 0%, #3a2570 55%, #6a3a9a 100%);
+  z-index: 45;
+  flex-direction: column;
+  padding: 16px;
+}
+.shop-head {
+  display: flex; align-items: center; justify-content: space-between;
+  width: 100%; max-width: 900px; margin: 4px auto 10px;
+  flex: 0 0 auto;
+}
+.shop-title {
+  font-size: clamp(26px, 5vw, 44px);
+  font-weight: 900; color: #ffe14d;
+  text-shadow: 0 3px 0 #a8331f, 0 6px 10px rgba(0,0,0,.4);
+}
+.shop-body {
+  width: 100%; max-width: 900px; margin: 0 auto;
+  flex: 1 1 auto; overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+.shop-cat-title {
+  color: #fff; font-weight: 900; font-size: clamp(18px, 3.2vw, 26px);
+  margin: 14px 6px 8px; text-shadow: 0 2px 4px rgba(0,0,0,.5);
+}
+.shop-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+}
+.shop-card {
+  background: rgba(255,255,255,.95);
+  border-radius: 18px;
+  padding: 12px 8px 10px;
+  text-align: center;
+  box-shadow: 0 5px 0 rgba(0,0,0,.25);
+  display: flex; flex-direction: column; align-items: center; gap: 6px;
+}
+.shop-icon {
+  font-size: clamp(34px, 7vw, 56px);
+  line-height: 1; height: 1.1em;
+  display: flex; align-items: center; justify-content: center;
+}
+.shop-swatch {
+  width: clamp(38px, 8vw, 60px); height: clamp(38px, 8vw, 60px);
+  border-radius: 50%;
+  border: 4px solid #fff;
+  box-shadow: inset -4px -5px 8px rgba(0,0,0,.25), 0 2px 4px rgba(0,0,0,.3);
+}
+.shop-name { font-weight: 900; color: #3a2570; font-size: clamp(13px, 2.4vw, 18px); }
+.shop-buy {
+  font-family: inherit; font-weight: 900; border: none; cursor: pointer;
+  border-radius: 999px; padding: 8px 14px; font-size: clamp(13px, 2.4vw, 18px);
+  color: #fff; background: #34c759; box-shadow: 0 4px 0 #1f8c3c;
+  display: inline-flex; align-items: center; gap: 5px;
+}
+.shop-buy:active { transform: translateY(3px); box-shadow: 0 1px 0 #1f8c3c; }
+.shop-buy.cant { background: #b0b4bb; box-shadow: 0 4px 0 #888c93; }       /* 買えない */
+.shop-buy.equip { background: #2f8fd8; box-shadow: 0 4px 0 #1f5f95; }      /* 装備する */
+.shop-buy.equipped { background: #ffb02e; box-shadow: 0 4px 0 #c47e10; }   /* 装備中 */
+.shop-back {
+  flex: 0 0 auto; margin: 12px auto 4px;
+  background: #e8513f; box-shadow: 0 7px 0 #a8331f, 0 10px 22px rgba(0,0,0,.4);
+}
+.shop-back:active { box-shadow: 0 2px 0 #a8331f; transform: translateY(5px); }
+
+/* ===========================================================
+   コックピットのカスタマイズ（プレイ画面）
+   =========================================================== */
+/* トロッコの色：窓枠の差し色（内側に色のフチ） */
+.trolley-tint {
+  position: absolute; inset: 0; z-index: 5;
+  pointer-events: none; display: none;
+  border-radius: inherit;
+  /* 色の太いフチ＋内側の白いハイライト（color-mix不使用で互換性確保） */
+  box-shadow: inset 0 0 0 1.6cqw var(--tc, transparent),
+              inset 0 0 3cqw 1.6cqw rgba(255,255,255,.18);
+}
+/* 置物の棚（左ダッシュボード） */
+.shelf {
+  position: absolute; left: 13%; top: 70%;
+  z-index: 4; display: none; pointer-events: none;
+  width: 11cqw; height: 2cqw;
+  background: linear-gradient(#9b6b3a, #6e4a23);
+  border-radius: 0.6cqw;
+  box-shadow: 0 0.5cqw 0 rgba(0,0,0,.35);
+}
+.shelf-item {
+  position: absolute; left: 50%; bottom: 90%;
+  transform: translateX(-50%);
+  font-size: 7cqw; line-height: 1;
+  filter: drop-shadow(0 0.4cqw 0.4cqw rgba(0,0,0,.4));
+}
+/* ステッカー（窓ガラスに貼る） */
+.sticker {
+  position: absolute; left: 13%; top: 16%;
+  z-index: 4; display: none; pointer-events: none;
+  font-size: 7cqw; line-height: 1;
+  transform: rotate(-10deg);
+  filter: drop-shadow(0 0 0.3cqw #fff) drop-shadow(0 0.3cqw 0.4cqw rgba(0,0,0,.35));
+}
 </style>
 </head>
 <body>
@@ -1081,7 +1219,25 @@ html, body {
     <img class="cover-bg" src="cover.png" alt="" aria-hidden="true">
     <!-- 表紙イラスト全体（タイトルを切らさず表示） -->
     <img class="cover-img" src="cover.png" alt="ひきざんトロッコ 算数大冒険">
+    <div class="jewel-pill title-jewel">
+      <span class="gem" style="--gc:#7ad0ff; --gs:24px"></span>
+      <span class="jewel-amount">0</span>
+    </div>
     <button class="big-btn cover-start" id="startBtn">スタート</button>
+    <button class="big-btn shop-open" id="shopBtn">💎 ジュエルショップ</button>
+  </section>
+
+  <!-- ============ ジュエルショップ画面 ============ -->
+  <section id="shopScreen" class="screen">
+    <div class="shop-head">
+      <h2 class="shop-title">💎 ジュエルショップ</h2>
+      <div class="jewel-pill">
+        <span class="gem" style="--gc:#7ad0ff; --gs:26px"></span>
+        <span class="jewel-amount">0</span>
+      </div>
+    </div>
+    <div class="shop-body" id="shopBody"></div>
+    <button class="big-btn shop-back" id="shopBackBtn">もどる</button>
   </section>
 
   <!-- ============ プレイ画面 ============ -->
@@ -1120,6 +1276,11 @@ html, body {
         <span style="left:14%"></span><span style="left:30%"></span>
         <span style="left:70%"></span><span style="left:86%"></span>
       </div>
+
+      <!-- カスタマイズ（ショップで購入・装備） -->
+      <div class="trolley-tint" id="trolleyTint"></div>            <!-- トロッコの色（縁の差し色） -->
+      <div class="shelf" id="shelf"><span class="shelf-item" id="shelfItem"></span></div>  <!-- 置物の棚 -->
+      <div class="sticker" id="sticker"></div>                     <!-- ステッカー -->
     </div>
 
 
@@ -1133,10 +1294,15 @@ html, body {
         </div>
       </div>
       <div class="score">もんだい <span class="num" id="stageNum">1</span>/10</div>
-      <!-- 集めた宝石カウンター -->
+      <!-- 集めた宝石カウンター（今回のラン） -->
       <div class="gem-hud">
         <span class="gem" style="--gc:#4d8bff; --gs:26px"></span>
         <span id="gemCount">0</span>
+      </div>
+      <!-- ジュエル残高（おさいふ） -->
+      <div class="jewel-pill play-jewel">
+        <span class="gem" style="--gc:#7ad0ff; --gs:20px"></span>
+        <span class="jewel-amount">0</span>
       </div>
       <div class="prompt-go" id="promptGo">どっちに すすむ？</div>
     </div>
@@ -1209,6 +1375,7 @@ const screens = {
   play:  document.getElementById('playScreen'),
   over:  document.getElementById('overScreen'),
   clear: document.getElementById('clearScreen'),
+  shop:  document.getElementById('shopScreen'),
 };
 function showScreen(name) {
   Object.values(screens).forEach(s => s.classList.remove('active'));
@@ -1242,6 +1409,132 @@ const GEMS = [
 ];
 let gemCounts = {};     // 種類ごとの獲得数
 let gemTotal = 0;       // 合計獲得数
+
+/* ===========================================================
+   ジュエル経済・ショップ（localStorageに保存）
+   =========================================================== */
+const JEWELS_PER_GEM = 10;          // 宝石1個 = 10ジュエル
+const SAVE_KEY = 'trocco_save_v1';
+
+// 購入できるアイテム一覧
+const SHOP = [
+  { id:'color_red',     cat:'color',   name:'あかいトロッコ', price:120, val:'#e8513f' },
+  { id:'color_blue',    cat:'color',   name:'あおいトロッコ', price:120, val:'#2f7ed8' },
+  { id:'color_gold',    cat:'color',   name:'きんのトロッコ', price:300, val:'#f4c233' },
+  { id:'fig_robot',     cat:'figure',  name:'ロボット',       price:150, val:'🤖' },
+  { id:'fig_bear',      cat:'figure',  name:'クマ',           price:150, val:'🧸' },
+  { id:'fig_cat',       cat:'figure',  name:'ねこ',           price:150, val:'🐱' },
+  { id:'sticker_star',  cat:'sticker', name:'ほし',           price:80,  val:'⭐' },
+  { id:'sticker_animal',cat:'sticker', name:'どうぶつ',       price:80,  val:'🐻' },
+  { id:'sticker_mecha', cat:'sticker', name:'メカ',           price:120, val:'⚙️' },
+];
+const CAT_INFO = [
+  { cat:'color',   title:'トロッコの色' },
+  { cat:'figure',  title:'コックピットの置物' },
+  { cat:'sticker', title:'ステッカー' },
+];
+
+function loadSave() {
+  const def = { jewels:0, owned:[], equipped:{ color:null, figure:null, sticker:null } };
+  try {
+    const s = JSON.parse(localStorage.getItem(SAVE_KEY) || '{}');
+    return {
+      jewels: s.jewels || 0,
+      owned: Array.isArray(s.owned) ? s.owned : [],
+      equipped: Object.assign({ color:null, figure:null, sticker:null }, s.equipped || {}),
+    };
+  } catch (e) { return def; }
+}
+let save = loadSave();
+function persist() { try { localStorage.setItem(SAVE_KEY, JSON.stringify(save)); } catch (e) {} }
+
+/* 全てのジュエル残高表示を更新 */
+function updateJewelUI() {
+  document.querySelectorAll('.jewel-amount').forEach(el => el.textContent = save.jewels);
+}
+/* ランの宝石をジュエルに換金して保存 */
+function awardJewels() {
+  if (gemTotal > 0) { save.jewels += gemTotal * JEWELS_PER_GEM; persist(); updateJewelUI(); }
+}
+/* 装備中のカスタマイズをコックピットに反映 */
+function applyCosmetics() {
+  const eq = save.equipped;
+  const find = id => SHOP.find(i => i.id === id);
+  const color = find(eq.color), fig = find(eq.figure), st = find(eq.sticker);
+  const tint = document.getElementById('trolleyTint');
+  if (color) { tint.style.setProperty('--tc', color.val); tint.style.display = 'block'; }
+  else tint.style.display = 'none';
+  const shelf = document.getElementById('shelf');
+  if (fig) { document.getElementById('shelfItem').textContent = fig.val; shelf.style.display = 'block'; }
+  else shelf.style.display = 'none';
+  const sticker = document.getElementById('sticker');
+  if (st) { sticker.textContent = st.val; sticker.style.display = 'block'; }
+  else sticker.style.display = 'none';
+}
+
+/* ショップの描画 */
+function renderShop() {
+  updateJewelUI();
+  const body = document.getElementById('shopBody');
+  body.innerHTML = '';
+  CAT_INFO.forEach(({ cat, title }) => {
+    const h = document.createElement('div');
+    h.className = 'shop-cat-title';
+    h.textContent = title;
+    body.appendChild(h);
+    const grid = document.createElement('div');
+    grid.className = 'shop-grid';
+    SHOP.filter(i => i.cat === cat).forEach(item => grid.appendChild(makeShopCard(item)));
+    body.appendChild(grid);
+  });
+}
+function makeShopCard(item) {
+  const card = document.createElement('div');
+  card.className = 'shop-card';
+  // アイコン（色はスウォッチ、それ以外は絵文字）
+  let icon;
+  if (item.cat === 'color') {
+    icon = document.createElement('div');
+    icon.className = 'shop-swatch';
+    icon.style.background = item.val;
+  } else {
+    icon = document.createElement('div');
+    icon.className = 'shop-icon';
+    icon.textContent = item.val;
+  }
+  card.appendChild(icon);
+  const name = document.createElement('div');
+  name.className = 'shop-name';
+  name.textContent = item.name;
+  card.appendChild(name);
+  // 状態に応じたボタン
+  const btn = document.createElement('button');
+  const owned = save.owned.includes(item.id);
+  const equipped = save.equipped[item.cat] === item.id;
+  if (equipped) {
+    btn.className = 'shop-buy equipped';
+    btn.textContent = 'そうび中';
+    btn.onclick = () => { save.equipped[item.cat] = null; persist(); applyCosmetics(); renderShop(); };
+  } else if (owned) {
+    btn.className = 'shop-buy equip';
+    btn.textContent = 'そうびする';
+    btn.onclick = () => { save.equipped[item.cat] = item.id; persist(); applyCosmetics(); renderShop(); };
+  } else {
+    const canBuy = save.jewels >= item.price;
+    btn.className = 'shop-buy' + (canBuy ? '' : ' cant');
+    btn.innerHTML = `<span class="gem" style="--gc:#7ad0ff;--gs:16px"></span>${item.price}`;
+    btn.onclick = () => {
+      if (save.jewels < item.price) { btn.animate([{transform:'translateX(-4px)'},{transform:'translateX(4px)'},{transform:'translateX(0)'}],{duration:200}); return; }
+      save.jewels -= item.price;
+      save.owned.push(item.id);
+      save.equipped[item.cat] = item.id;   // 買ったら自動装備
+      persist(); applyCosmetics(); renderShop();
+    };
+  }
+  card.appendChild(btn);
+  return card;
+}
+function openShop() { renderShop(); showScreen('shop'); }
 
 const elQuestion  = document.getElementById('question');
 const elStageNum  = document.getElementById('stageNum');
@@ -1585,6 +1878,7 @@ function gameOver(reason) {
   elTimerBar.style.transition = 'none'; // タイマーバーを止める
   showRocks();                 // 線路に岩が出て激突（減速）
   elPlay.classList.add('crash');
+  awardJewels();   // 失敗でも、それまでに集めた宝石はジュエルになる
   setTimeout(() => {
     elPlay.classList.remove('crash');
     // 石板に「正解の答え」を表示（学習のふりかえり）
@@ -1656,6 +1950,7 @@ function renderGemCollection() {
 function winGame() {
   clearTimers();
   stopBoss();
+  awardJewels();   // 集めた宝石をジュエルに換金
   document.getElementById('clearTime').textContent = formatTime(totalTimeMs);
   renderGemCollection();
   showScreen('clear');
@@ -1672,6 +1967,8 @@ function startGame() {
   elPlay.style.setProperty('--combo', 0); // コンボ演出リセット
   gemCounts = {}; gemTotal = 0;     // 宝石コレクションをリセット
   document.getElementById('gemCount').textContent = 0;
+  updateJewelUI();                  // おさいふ残高を表示
+  applyCosmetics();                 // 装備中のカスタマイズを反映
   elStageNum.textContent = 1;
   clearTimers();
   stopBoss();                       // ボスの状態をリセット
@@ -1689,6 +1986,8 @@ document.getElementById('retryBtn').addEventListener('click', startGame);
 document.getElementById('clearRetryBtn').addEventListener('click', startGame);
 document.getElementById('clearHomeBtn').addEventListener('click', () => showScreen('title'));
 document.getElementById('overHomeBtn').addEventListener('click', () => showScreen('title'));
+document.getElementById('shopBtn').addEventListener('click', openShop);
+document.getElementById('shopBackBtn').addEventListener('click', () => showScreen('title'));
 document.getElementById('zoneLeft').addEventListener('click', () => choose('left'));
 document.getElementById('zoneRight').addEventListener('click', () => choose('right'));
 
@@ -1711,6 +2010,10 @@ function jumpToBossIfRequested() {
 }
 window.addEventListener('hashchange', jumpToBossIfRequested);
 jumpToBossIfRequested();
+
+/* 初期表示：ジュエル残高＆装備カスタマイズを反映 */
+updateJewelUI();
+applyCosmetics();
 
 /* スピード線（集中線）を放射状に生成 */
 (function buildSpeedlines() {
