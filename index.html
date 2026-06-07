@@ -1208,6 +1208,59 @@ html, body {
   transform: rotate(-10deg);
   filter: drop-shadow(0 0 0.3cqw #fff) drop-shadow(0 0.3cqw 0.4cqw rgba(0,0,0,.35));
 }
+/* スペース・ジュエル号の模型（ダッシュボード上に浮遊） */
+.ship-mini {
+  position: absolute; left: 79%; top: 50%;
+  width: 20cqw; height: auto;
+  z-index: 4; display: none; pointer-events: none;
+  transform: translate(-50%,-50%);
+  filter: drop-shadow(0 0.6cqw 0.8cqw rgba(0,0,0,.45)) drop-shadow(0 0 1cqw rgba(120,200,255,.6));
+  animation: shipBob 2.4s ease-in-out infinite;
+}
+@keyframes shipBob {
+  0%,100% { transform: translate(-50%,-50%) translateY(0) rotate(-2deg); }
+  50%     { transform: translate(-50%,-50%) translateY(-1.4cqw) rotate(2deg); }
+}
+
+/* ショップ：画像アイテム＆特別景品の大カード */
+.shop-img { width: 100%; max-height: 22vh; object-fit: contain; }
+.shop-grid.special-grid { grid-template-columns: 1fr; }
+.shop-card.featured {
+  background: linear-gradient(180deg, #1c1450, #3a2570);
+  border: 3px solid #ffe14d;
+  box-shadow: 0 5px 0 rgba(0,0,0,.3), 0 0 24px rgba(150,120,255,.5);
+}
+.shop-card.featured .shop-name { color: #ffe14d; font-size: clamp(18px,3.4vw,28px); }
+.shop-card.featured .shop-img {
+  filter: drop-shadow(0 0 10px rgba(150,200,255,.7));
+  animation: featShine 2.2s ease-in-out infinite;
+}
+@keyframes featShine {
+  0%,100% { transform: scale(1) rotate(-1deg); }
+  50%     { transform: scale(1.04) rotate(1deg); }
+}
+
+/* 購入演出：キラキラ→飛び出す */
+.ship-get {
+  position: fixed; inset: 0; z-index: 80; pointer-events: none;
+  display: flex; align-items: center; justify-content: center;
+  background: radial-gradient(circle at 50% 45%, rgba(120,90,255,.35), rgba(0,0,0,0) 60%);
+}
+.ship-get-img {
+  position: absolute; left: 50%; top: 45%;
+  width: min(60vw, 520px); height: auto;
+  transform: translate(-50%,-50%);
+  filter: drop-shadow(0 0 30px #fff) drop-shadow(0 0 60px #8ab6ff);
+}
+.ship-get-text {
+  position: absolute; left: 50%; bottom: 16%;
+  transform: translateX(-50%);
+  font-size: clamp(22px, 5vw, 44px); font-weight: 900; color: #fff;
+  -webkit-text-stroke: 1px #6a3a9a; text-shadow: 0 3px 0 #6a3a9a, 0 6px 12px rgba(0,0,0,.5);
+  white-space: nowrap;
+  animation: getTextPop .5s cubic-bezier(.2,1.6,.4,1) both;
+}
+@keyframes getTextPop { 0%{transform:translateX(-50%) scale(0);} 100%{transform:translateX(-50%) scale(1);} }
 </style>
 </head>
 <body>
@@ -1281,6 +1334,7 @@ html, body {
       <div class="trolley-tint" id="trolleyTint"></div>            <!-- トロッコの色（縁の差し色） -->
       <div class="shelf" id="shelf"><span class="shelf-item" id="shelfItem"></span></div>  <!-- 置物の棚 -->
       <div class="sticker" id="sticker"></div>                     <!-- ステッカー -->
+      <img class="ship-mini" id="shipMini" src="spaceship.png" alt="">  <!-- スペース・ジュエル号の模型 -->
     </div>
 
 
@@ -1418,6 +1472,7 @@ const SAVE_KEY = 'trocco_save_v1';
 
 // 購入できるアイテム一覧
 const SHOP = [
+  { id:'ship_special',  cat:'special', name:'スペース・ジュエル号', price:1000, val:'spaceship.png', img:true },
   { id:'color_red',     cat:'color',   name:'あかいトロッコ', price:120, val:'#e8513f' },
   { id:'color_blue',    cat:'color',   name:'あおいトロッコ', price:120, val:'#2f7ed8' },
   { id:'color_gold',    cat:'color',   name:'きんのトロッコ', price:300, val:'#f4c233' },
@@ -1429,19 +1484,20 @@ const SHOP = [
   { id:'sticker_mecha', cat:'sticker', name:'メカ',           price:120, val:'⚙️' },
 ];
 const CAT_INFO = [
+  { cat:'special', title:'🌟 とくべつ景品（レア）' },
   { cat:'color',   title:'トロッコの色' },
   { cat:'figure',  title:'コックピットの置物' },
   { cat:'sticker', title:'ステッカー' },
 ];
 
 function loadSave() {
-  const def = { jewels:0, owned:[], equipped:{ color:null, figure:null, sticker:null } };
+  const def = { jewels:0, owned:[], equipped:{ color:null, figure:null, sticker:null, special:null } };
   try {
     const s = JSON.parse(localStorage.getItem(SAVE_KEY) || '{}');
     return {
       jewels: s.jewels || 0,
       owned: Array.isArray(s.owned) ? s.owned : [],
-      equipped: Object.assign({ color:null, figure:null, sticker:null }, s.equipped || {}),
+      equipped: Object.assign({ color:null, figure:null, sticker:null, special:null }, s.equipped || {}),
     };
   } catch (e) { return def; }
 }
@@ -1470,6 +1526,35 @@ function applyCosmetics() {
   const sticker = document.getElementById('sticker');
   if (st) { sticker.textContent = st.val; sticker.style.display = 'block'; }
   else sticker.style.display = 'none';
+  // スペース・ジュエル号の模型
+  const ship = document.getElementById('shipMini');
+  if (eq.special) ship.style.display = 'block';
+  else ship.style.display = 'none';
+}
+
+/* スペース・ジュエル号 購入演出（キラキラ→飛び出してコックピットへ） */
+function playShipGetAnimation() {
+  const o = document.createElement('div');
+  o.className = 'ship-get';
+  o.innerHTML = `
+    <img class="ship-get-img" src="spaceship.png" alt="">
+    <div class="ship-get-text">スペース・ジュエル号 ゲット！</div>`;
+  document.body.appendChild(o);
+  const img = o.querySelector('.ship-get-img');
+  // 中央でキラキラ→上へ飛び出す
+  img.animate([
+    { transform:'translate(-50%,-50%) scale(.2) rotate(-8deg)', opacity:0 },
+    { transform:'translate(-50%,-50%) scale(1) rotate(0deg)',  opacity:1, offset:.35 },
+    { transform:'translate(-50%,-50%) scale(1.05) rotate(0deg)', opacity:1, offset:.7 },
+    { transform:'translate(60%,-180%) scale(.3) rotate(18deg)', opacity:0 }
+  ], { duration:1700, easing:'cubic-bezier(.5,0,.5,1)' });
+  setTimeout(() => o.remove(), 1750);
+  if (audioCtx) { /* キラッ音 */ try {
+    const t=audioCtx.currentTime, oo=audioCtx.createOscillator(), gg=audioCtx.createGain();
+    oo.type='triangle'; oo.frequency.setValueAtTime(700,t); oo.frequency.exponentialRampToValueAtTime(1800,t+0.3);
+    gg.gain.setValueAtTime(0.0001,t); gg.gain.exponentialRampToValueAtTime(0.3,t+0.05); gg.gain.exponentialRampToValueAtTime(0.0001,t+0.5);
+    oo.connect(gg).connect(audioCtx.destination); oo.start(t); oo.stop(t+0.5);
+  } catch(e){} }
 }
 
 /* ショップの描画 */
@@ -1483,17 +1568,22 @@ function renderShop() {
     h.textContent = title;
     body.appendChild(h);
     const grid = document.createElement('div');
-    grid.className = 'shop-grid';
+    grid.className = 'shop-grid' + (cat === 'special' ? ' special-grid' : '');
     SHOP.filter(i => i.cat === cat).forEach(item => grid.appendChild(makeShopCard(item)));
     body.appendChild(grid);
   });
 }
 function makeShopCard(item) {
   const card = document.createElement('div');
-  card.className = 'shop-card';
-  // アイコン（色はスウォッチ、それ以外は絵文字）
+  card.className = 'shop-card' + (item.cat === 'special' ? ' featured' : '');
+  // アイコン（画像／色スウォッチ／絵文字）
   let icon;
-  if (item.cat === 'color') {
+  if (item.img) {
+    icon = document.createElement('img');
+    icon.className = 'shop-img';
+    icon.src = item.val;
+    icon.alt = item.name;
+  } else if (item.cat === 'color') {
     icon = document.createElement('div');
     icon.className = 'shop-swatch';
     icon.style.background = item.val;
@@ -1529,6 +1619,7 @@ function makeShopCard(item) {
       save.owned.push(item.id);
       save.equipped[item.cat] = item.id;   // 買ったら自動装備
       persist(); applyCosmetics(); renderShop();
+      if (item.id === 'ship_special') playShipGetAnimation();  // キラキラ→コックピットへ
     };
   }
   card.appendChild(btn);
