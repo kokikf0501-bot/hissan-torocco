@@ -261,8 +261,8 @@ html, body {
 /* --- 速度計（コンボで針が右へ） 中心≈(57.4%,74.6%) --- */
 .speedo {
   position: absolute;
-  left: 61.3%;
-  top: 72.7%;
+  left: 60.5%;
+  top: 73.4%;
   width: 0;
   height: 0;
   z-index: 3;
@@ -270,7 +270,7 @@ html, body {
 .speedo-face {
   position: absolute;
   left: 50%; top: 50%;
-  width: 5.6cqw; height: 5.6cqw;
+  width: 5.8cqw; height: 5.8cqw;
   transform: translate(-50%,-50%);
   border-radius: 50%;
   background: #f3e7b5;     /* メーター面のクリーム色（元の針を隠す） */
@@ -279,7 +279,7 @@ html, body {
   position: absolute;
   left: 50%; top: 50%;
   width: 0.7cqw;
-  height: 2.7cqw;            /* 針の長さ */
+  height: 3.1cqw;            /* 針の長さ */
   background: linear-gradient(#2a3a6a,#3f63b6);
   border-radius: 0.5cqw;
   transform-origin: 50% 100%;   /* 下端(中心)を軸に回転 */
@@ -289,7 +289,7 @@ html, body {
 .speedo-hub {
   position: absolute;
   left: 50%; top: 50%;
-  width: 1.4cqw; height: 1.4cqw;
+  width: 1.5cqw; height: 1.5cqw;
   transform: translate(-50%,-50%);
   border-radius: 50%;
   background: #2a3a6a;
@@ -736,6 +736,7 @@ html, body {
   margin-bottom: clamp(8px, 2vh, 30px);
   pointer-events: none;   /* タップはゾーンが受ける */
   filter: drop-shadow(0 6px 8px rgba(0,0,0,.45));
+  perspective: 600px;     /* 手前に倒す3D表現用 */
 }
 .lever-base {
   position: absolute;
@@ -753,9 +754,8 @@ html, body {
   transform-origin: 50% 100%;
   background: linear-gradient(90deg, #6e7480, #e3e9f0 45%, #6e7480);
   border-radius: 999px;
+  transform: translateX(-50%) rotateX(10deg);   /* 基準：少し奥に立つ */
 }
-.lever.left  .lever-stick { transform: translateX(-50%) rotate(-13deg); }
-.lever.right .lever-stick { transform: translateX(-50%) rotate(13deg); }
 .lever-knob {
   position: absolute;
   top: -10%; left: 50%;
@@ -770,18 +770,12 @@ html, body {
 .lever.left  .lever-knob { background: radial-gradient(circle at 35% 30%, #6ea8ff, #2f6fd0); }
 .lever.right .lever-knob { background: radial-gradient(circle at 35% 30%, #ff8a7a, #d8402f); }
 
-/* ガチャン！と倒れる演出 */
-.lever.left.pull  .lever-stick { animation: leverPullL .34s cubic-bezier(.25,1.5,.5,1); }
-.lever.right.pull .lever-stick { animation: leverPullR .34s cubic-bezier(.25,1.5,.5,1); }
-@keyframes leverPullL {
-  0%   { transform: translateX(-50%) rotate(-13deg); }
-  35%  { transform: translateX(-50%) rotate(26deg); }
-  100% { transform: translateX(-50%) rotate(-13deg); }
-}
-@keyframes leverPullR {
-  0%   { transform: translateX(-50%) rotate(13deg); }
-  35%  { transform: translateX(-50%) rotate(-26deg); }
-  100% { transform: translateX(-50%) rotate(13deg); }
+/* ガチャン！と手前に引く演出（rotateXで手前に倒す） */
+.lever.pull .lever-stick { animation: leverPull .36s cubic-bezier(.25,1.5,.5,1); }
+@keyframes leverPull {
+  0%   { transform: translateX(-50%) rotateX(10deg); }
+  40%  { transform: translateX(-50%) rotateX(66deg); }   /* グイッと手前へ */
+  100% { transform: translateX(-50%) rotateX(10deg); }
 }
 
 /* 正解時のキラッ */
