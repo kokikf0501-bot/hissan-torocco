@@ -261,8 +261,8 @@ html, body {
 /* --- 速度計（コンボで針が右へ） 中心≈(57.4%,74.6%) --- */
 .speedo {
   position: absolute;
-  left: 60.5%;
-  top: 73.4%;
+  left: 61.3%;
+  top: 72.8%;
   width: 0;
   height: 0;
   z-index: 3;
@@ -1209,43 +1209,20 @@ html, body {
   filter: drop-shadow(0 0 0.3cqw #fff) drop-shadow(0 0.3cqw 0.4cqw rgba(0,0,0,.35));
 }
 /* スペース・ジュエル号の模型（ダッシュボード上に浮遊） */
-.ship-mini {
-  position: absolute; left: 13.5%; top: 52%;
-  width: 17cqw; height: auto;
+/* 景品フィギュア：左の木の棚の上に飾る（棚の高さ＝下から約43%） */
+.ship-mini, .uni-mini, .sword-mini {
+  position: absolute;
   z-index: 6; display: none; pointer-events: none;
-  transform: translate(-50%,-50%);
-  filter: drop-shadow(0 0.6cqw 0.8cqw rgba(0,0,0,.45)) drop-shadow(0 0 1cqw rgba(120,200,255,.6));
-  animation: shipBob 2.4s ease-in-out infinite;
+  height: auto;
+  transform: translateX(-50%);
+  filter: drop-shadow(0 0.4cqw 0.5cqw rgba(0,0,0,.5));
 }
-@keyframes shipBob {
-  0%,100% { transform: translate(-50%,-50%) translateY(0) rotate(-2deg); }
-  50%     { transform: translate(-50%,-50%) translateY(-1.4cqw) rotate(2deg); }
-}
-/* でんせつのユニコーン（模型） */
-.uni-mini {
-  position: absolute; left: 88%; top: 58%;
-  width: 15cqw; height: auto;
-  z-index: 6; display: none; pointer-events: none;
-  transform: translate(-50%,-50%);
-  filter: drop-shadow(0 0.6cqw 0.8cqw rgba(0,0,0,.45)) drop-shadow(0 0 1cqw rgba(255,160,255,.7));
-  animation: uniBob 2.8s ease-in-out infinite;
-}
-@keyframes uniBob {
-  0%,100% { transform: translate(-50%,-50%) translateY(0) rotate(2deg); }
-  50%     { transform: translate(-50%,-50%) translateY(-1.2cqw) rotate(-2deg); }
-}
-/* でんせつの剣（コックピット上部に飾る） */
-.sword-mini {
-  position: absolute; left: 50%; top: 12%;
-  width: 30cqw; height: auto;
-  z-index: 6; display: none; pointer-events: none;
-  transform: translate(-50%,-50%) rotate(-7deg);
-  filter: drop-shadow(0 0.5cqw 0.7cqw rgba(0,0,0,.5)) drop-shadow(0 0 1cqw rgba(180,220,255,.7));
-  animation: swordBob 3.2s ease-in-out infinite;
-}
-@keyframes swordBob {
-  0%,100% { transform: translate(-50%,-50%) rotate(-7deg); }
-  50%     { transform: translate(-50%,-50%) translateY(-0.8cqw) rotate(-5deg); }
+.ship-mini  { left: 8.5%;  bottom: 43.5%; width: 8.5cqw; animation: miniBob 2.6s ease-in-out infinite; }
+.uni-mini   { left: 16%;   bottom: 43%;   width: 7.5cqw; animation: miniBob 2.9s ease-in-out -0.9s infinite; }
+.sword-mini { left: 24%;   bottom: 44%;   width: 10cqw; animation: miniBob 3.2s ease-in-out -1.5s infinite; }
+@keyframes miniBob {
+  0%,100% { transform: translateX(-50%) translateY(0); }
+  50%     { transform: translateX(-50%) translateY(-0.6cqw); }
 }
 
 /* ショップ：画像アイテム＆特別景品の大カード */
