@@ -1385,21 +1385,50 @@ html, body {
   font-size: clamp(15px,2.6vw,22px); padding: 4px 10px; border-radius: 12px;
   box-shadow: 0 3px 0 rgba(0,0,0,.25);
 }
+.ai-icon.used { filter: grayscale(1); opacity: .38; }   /* 使用済み＝グレーアウト */
 
-/* ふたばシールド発動演出 */
-.shield-block { position: absolute; left: 50%; top: 45%; transform: translate(-50%,-50%); z-index: 9; pointer-events: none; }
-.shield-ring {
-  position: absolute; left: 50%; top: 50%; width: 26cqw; height: 26cqw; margin: -13cqw 0 0 -13cqw;
-  border-radius: 50%; border: 1cqw solid #5ad6ff;
-  box-shadow: 0 0 4cqw #5ad6ff, inset 0 0 3cqw #bfefff;
-  transform: scale(.3); opacity: 0; animation: shieldRing .8s ease-out forwards;
+/* ふたばシールド発動演出：コックピット全体を緑のバリアが包む */
+.shield-block { position: absolute; inset: 0; z-index: 9; pointer-events: none; overflow: hidden; }
+/* 全体を覆う緑の透過バリア（ドーム状の光） */
+.shield-barrier {
+  position: absolute; inset: 0;
+  background:
+    radial-gradient(ellipse 70% 60% at 50% 55%, rgba(120,255,150,.45) 0%, rgba(80,235,130,.28) 45%, rgba(60,220,120,.1) 70%, rgba(60,220,120,0) 85%),
+    radial-gradient(circle at 50% 55%, rgba(255,255,255,.35) 0%, rgba(255,255,255,0) 30%);
+  box-shadow: inset 0 0 12cqw rgba(120,255,160,.6);
+  opacity: 0; animation: barrierFlash 1.0s ease-out forwards;
 }
-@keyframes shieldRing { 0%{transform:scale(.3);opacity:1;} 100%{transform:scale(1.2);opacity:0;} }
+@keyframes barrierFlash {
+  0%   { opacity: 0;   transform: scale(1.06); }
+  18%  { opacity: 1;   transform: scale(1); }
+  60%  { opacity: .9; }
+  100% { opacity: 0;   transform: scale(1.02); }
+}
+.shield-ring {
+  position: absolute; left: 50%; top: 50%; width: 30cqw; height: 30cqw; margin: -15cqw 0 0 -15cqw;
+  border-radius: 50%; border: 1cqw solid #7dffa0;
+  box-shadow: 0 0 4cqw #6cf59a, inset 0 0 3cqw #d6ffe2;
+  transform: scale(.3); opacity: 0; animation: shieldRing .9s ease-out forwards;
+}
+@keyframes shieldRing { 0%{transform:scale(.3);opacity:1;} 100%{transform:scale(1.35);opacity:0;} }
+/* 中央に飛び出すふたばシールドの紋章 */
+.shield-emblem {
+  position: absolute; left: 50%; top: 48%; width: 24cqw; height: auto;
+  transform: translate(-50%,-50%) scale(0);
+  filter: drop-shadow(0 0 2cqw rgba(120,255,160,.9));
+  animation: shieldEmblem 1.05s cubic-bezier(.2,1.6,.4,1) forwards;
+}
+@keyframes shieldEmblem {
+  0%{transform:translate(-50%,-50%) scale(0) rotate(-12deg);}
+  45%{transform:translate(-50%,-50%) scale(1.12) rotate(0deg);}
+  80%{transform:translate(-50%,-50%) scale(1);opacity:1;}
+  100%{transform:translate(-50%,-50%) scale(1.04);opacity:0;}
+}
 .shield-text {
-  position: absolute; left: 50%; top: 50%; transform: translate(-50%,-50%) scale(0);
+  position: absolute; left: 50%; top: 76%; transform: translate(-50%,-50%) scale(0);
   font-size: 6cqw; font-weight: 900; color: #fff; white-space: nowrap;
-  -webkit-text-stroke: 0.4cqw #2a8fc4; text-shadow: 0 0.4cqw 0 #1f5f95;
-  animation: shieldPop .8s cubic-bezier(.2,1.6,.4,1) forwards;
+  -webkit-text-stroke: 0.4cqw #2a9c4f; text-shadow: 0 0.4cqw 0 #1f7a3d;
+  animation: shieldPop .9s cubic-bezier(.2,1.6,.4,1) forwards;
 }
 @keyframes shieldPop { 0%{transform:translate(-50%,-50%) scale(0);} 40%{transform:translate(-50%,-50%) scale(1.15);} 80%{transform:translate(-50%,-50%) scale(1);opacity:1;} 100%{transform:translate(-50%,-50%) scale(1.05);opacity:0;} }
 
@@ -1718,7 +1747,7 @@ const SHOP = [
   { id:'lantern_glow',     cat:'accessory', name:'光るランタン',   price:300, emoji:'🏮', glow:'green',   img:true, val:'part_acc_lantern.png',  src:'part_acc_lantern.png',  desc:'暗いトンネルも安心！やさしく光るランタン' },
   { id:'compass_yurayura', cat:'accessory', name:'ゆらゆら羅針盤', price:400, emoji:'🧭', glow:'rainbow', img:true, val:'part_acc_compass_shop.png', src:'part_acc_compass.png', desc:'コックピットでゆらゆら動く魔法の羅針盤！冒険がもっと楽しくなるぞ！' },
   // 🎒 おたすけアイテム（消費・複数所持）
-  { id:'item_shield', cat:'consumable', name:'ふたばシールド',       price:200, emoji:'🛡️', desc:'1かいミスしても とまらない' },
+  { id:'item_shield', cat:'consumable', name:'ふたばシールド',       price:200, emoji:'🛡️', img:true, val:'item_shield.png', desc:'1回だけ、まちがえても大じょうぶ！岩のぶつかるのを防ぐよ' },
   { id:'item_double', cat:'consumable', name:'ジュエル2ばいチケット', price:500, emoji:'✨', desc:'もらえるジュエルが2ばい' },
 ];
 const CAT_INFO = [
@@ -1745,8 +1774,9 @@ let save = loadSave();
 function persist() { try { localStorage.setItem(SAVE_KEY, JSON.stringify(save)); } catch (e) {} }
 
 /* このランで使用中のお助けアイテム（プレイ開始時にON、消費される） */
-let armedShield = false;   // ふたばシールド：1回ミスを無効化
-let armedDouble = false;   // ジュエル2倍
+let armedShield = false;   // ふたばシールド：装備中（まだ未使用）
+let armedDouble = false;   // ジュエル2倍：装備中
+let shieldUsed  = false;   // このプレイ中にシールドを使ったか（=終了時に1個消費）
 
 function itemCount(id) { return save.items[id] || 0; }
 function markSeen(id) { if (!save.seen.includes(id)) save.seen.push(id); }
@@ -2292,8 +2322,9 @@ function choose(side) {
       setTimeout(nextProblem, 350); // シームレスに次の問題へ
     }
   } else if (armedShield) {
-    // --- ふたばシールドでミスを1回無効化 ---
-    armedShield = false;
+    // --- ふたばシールドでミスを1回無効化（岩の衝突をインターセプト）---
+    armedShield = false;     // 使用不可に
+    shieldUsed  = true;      // 終了時に1個消費＆アイコンをグレーアウト
     updateActiveItems();
     showShieldBlock();
     if (stage >= TOTAL_STAGES) {
@@ -2309,21 +2340,33 @@ function choose(side) {
   }
 }
 
-/* ふたばシールド発動演出 */
+/* ふたばシールド発動演出：コックピット全体を緑のバリアが包む */
 function showShieldBlock() {
   const st = document.querySelector('.play-stage');
   if (st) {
     const s = document.createElement('div');
     s.className = 'shield-block';
-    s.innerHTML = '<div class="shield-ring"></div><div class="shield-text">🛡️ シールド！</div>';
+    s.innerHTML =
+      '<div class="shield-barrier"></div>' +
+      '<div class="shield-ring"></div>' +
+      '<img class="shield-emblem" src="shield_emblem.png" alt="" onerror="this.style.display=\'none\'">' +
+      '<div class="shield-text">シールド！</div>';
     st.appendChild(s);
-    setTimeout(() => s.remove(), 900);
+    setTimeout(() => s.remove(), 1100);
   }
+  // 専用の保護SE（「キーン」と高く澄んだ音）
   if (audioCtx) { try {
-    const t = audioCtx.currentTime, o = audioCtx.createOscillator(), g = audioCtx.createGain();
-    o.type = 'sine'; o.frequency.setValueAtTime(880, t); o.frequency.exponentialRampToValueAtTime(440, t + 0.25);
-    g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(0.3, t + 0.02); g.gain.exponentialRampToValueAtTime(0.0001, t + 0.4);
-    o.connect(g).connect(audioCtx.destination); o.start(t); o.stop(t + 0.42);
+    const t = audioCtx.currentTime;
+    // キーン（高音のきらめき）
+    const o = audioCtx.createOscillator(), g = audioCtx.createGain();
+    o.type = 'sine'; o.frequency.setValueAtTime(1320, t); o.frequency.exponentialRampToValueAtTime(990, t + 0.5);
+    g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(0.28, t + 0.02); g.gain.exponentialRampToValueAtTime(0.0001, t + 0.6);
+    o.connect(g).connect(audioCtx.destination); o.start(t); o.stop(t + 0.62);
+    // 重なる倍音で「結界」っぽさを足す
+    const o2 = audioCtx.createOscillator(), g2 = audioCtx.createGain();
+    o2.type = 'triangle'; o2.frequency.setValueAtTime(1980, t); o2.frequency.exponentialRampToValueAtTime(1480, t + 0.45);
+    g2.gain.setValueAtTime(0.0001, t); g2.gain.exponentialRampToValueAtTime(0.12, t + 0.03); g2.gain.exponentialRampToValueAtTime(0.0001, t + 0.5);
+    o2.connect(g2).connect(audioCtx.destination); o2.start(t); o2.stop(t + 0.52);
   } catch (e) {} }
 }
 
@@ -2332,7 +2375,8 @@ function updateActiveItems() {
   const c = document.getElementById('activeItems');
   if (!c) return;
   let h = '';
-  if (armedShield) h += '<span class="ai-icon">🛡️</span>';
+  if (armedShield)      h += '<span class="ai-icon">🛡️</span>';
+  else if (shieldUsed)  h += '<span class="ai-icon used">🛡️</span>'; // 使用済み＝グレーアウト
   if (armedDouble) h += '<span class="ai-icon">✨2×</span>';
   c.innerHTML = h;
 }
@@ -2346,7 +2390,8 @@ function gameOver(reason) {
   showRocks();                 // 線路に岩が出て激突（減速）
   elPlay.classList.add('crash');
   awardJewels();   // 失敗でも、それまでに集めた宝石はジュエルになる
-  armedShield = false; armedDouble = false;  // 使用アイテムをリセット
+  consumeUsedItems();                        // 使ったアイテムを所持数から減らす
+  armedShield = false; armedDouble = false; shieldUsed = false;  // 使用アイテムをリセット
   setTimeout(() => {
     elPlay.classList.remove('crash');
     // 石板に「正解の答え」を表示（学習のふりかえり）
@@ -2419,7 +2464,8 @@ function winGame() {
   clearTimers();
   stopBoss();
   awardJewels();   // 集めた宝石をジュエルに換金（2倍チケット適用）
-  armedShield = false; armedDouble = false;  // 使用アイテムをリセット
+  consumeUsedItems();                        // 使ったアイテムを所持数から減らす
+  armedShield = false; armedDouble = false; shieldUsed = false;  // 使用アイテムをリセット
   document.getElementById('clearTime').textContent = formatTime(totalTimeMs);
   renderGemCollection();
   showScreen('clear');
@@ -2454,7 +2500,7 @@ function beginGame() {
   initAudio();
   const hasItems = SHOP.some(i => i.cat === 'consumable' && itemCount(i.id) > 0);
   if (hasItems) { openItemModal(); }
-  else { armedShield = false; armedDouble = false; startGame(); }
+  else { armedShield = false; armedDouble = false; shieldUsed = false; startGame(); }
 }
 function openItemModal() {
   itemArmSel = {};
@@ -2477,16 +2523,18 @@ function openItemModal() {
 }
 function confirmItemsAndStart() {
   document.getElementById('itemModal').classList.remove('show');
-  armedShield = false; armedDouble = false;
-  Object.keys(itemArmSel).forEach(id => {
-    if (itemArmSel[id] && itemCount(id) > 0) {
-      save.items[id] = itemCount(id) - 1;     // 消費
-      if (id === 'item_shield') armedShield = true;
-      if (id === 'item_double') armedDouble = true;
-    }
-  });
-  persist();
+  // 装備だけ決める（消費はプレイ終了時に行う）
+  armedShield = !!(itemArmSel['item_shield'] && itemCount('item_shield') > 0);
+  armedDouble = !!(itemArmSel['item_double'] && itemCount('item_double') > 0);
+  shieldUsed = false;
   startGame();
+}
+
+/* プレイ終了時：実際に使ったアイテムだけ所持数を1減らす */
+function consumeUsedItems() {
+  if (shieldUsed)  save.items['item_shield'] = Math.max(0, itemCount('item_shield') - 1); // シールドは無効化したときだけ消費
+  if (armedDouble) save.items['item_double'] = Math.max(0, itemCount('item_double') - 1); // 2倍チケットは装備したら消費
+  persist();
 }
 
 /* ===========================================================
@@ -2516,7 +2564,7 @@ document.addEventListener('keydown', (e) => {
    最終ステージ（ラスボス P.O.C. OVERLORD）からスタートする */
 function jumpToBossIfRequested() {
   if (location.hash === '#boss') {
-    armedShield = false; armedDouble = false;
+    armedShield = false; armedDouble = false; shieldUsed = false;
     startGame();
     stage = TOTAL_STAGES;
     score = TOTAL_STAGES - 1;
