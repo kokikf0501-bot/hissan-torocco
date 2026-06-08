@@ -1361,10 +1361,16 @@ html, body {
 .acc-item { display: block; font-size: 7cqw; line-height: 1; margin-top: -0.5cqw; filter: drop-shadow(0 0.4cqw 0.4cqw rgba(0,0,0,.4)); }
 .acc-img  { display: none; width: 9cqw; height: auto; margin: -1.2cqw auto 0; filter: drop-shadow(0 0.5cqw 0.5cqw rgba(0,0,0,.4)); }
 .accessory.glow .acc-item { animation: accGlow 1.4s ease-in-out infinite; }
-.accessory.glow .acc-img  { animation: accGlowGreen 1.8s ease-in-out infinite; }
+.accessory.glow-green  .acc-img { animation: accGlowGreen 1.8s ease-in-out infinite; }
+.accessory.glow-rainbow .acc-img { animation: accShimmerRainbow 4s linear infinite; }
 @keyframes accGlowGreen {
   0%,100% { filter: drop-shadow(0 0.4cqw 0.4cqw rgba(0,0,0,.4)) drop-shadow(0 0 0.6cqw rgba(120,255,150,.5)); }
   50%     { filter: drop-shadow(0 0.4cqw 0.4cqw rgba(0,0,0,.4)) drop-shadow(0 0 2.4cqw rgba(140,255,170,1)); }
+}
+@keyframes accShimmerRainbow {
+  0%   { filter: drop-shadow(0 0.4cqw 0.4cqw rgba(0,0,0,.4)) drop-shadow(0 0 0.7cqw rgba(255,255,255,.5)) hue-rotate(0deg); }
+  50%  { filter: drop-shadow(0 0.4cqw 0.4cqw rgba(0,0,0,.4)) drop-shadow(0 0 2.2cqw rgba(200,220,255,.95)) hue-rotate(180deg); }
+  100% { filter: drop-shadow(0 0.4cqw 0.4cqw rgba(0,0,0,.4)) drop-shadow(0 0 0.7cqw rgba(255,255,255,.5)) hue-rotate(360deg); }
 }
 @keyframes accSwing { 0%,100% { transform: rotate(-7deg); } 50% { transform: rotate(7deg); } }
 @keyframes accGlow {
@@ -1709,8 +1715,8 @@ const SHOP = [
   { id:'wheel_dragon',  cat:'parts', name:'伝説のドラゴンハンドル', price:500, img:true, val:'part_wheel_dragon_shop.png', src:'part_wheel_dragon.png', desc:'古代のドラゴンが宿るハンドル。魔力がみなぎるぞ！', gemX:51, gemY:55.4, gemColor:'green' },
   { id:'wheel_crystal', cat:'parts', name:'伝説のクリスタルハンドル', price:500, img:true, val:'part_wheel_crystal_shop.png', src:'part_wheel_crystal.png', desc:'虹色に輝くクリスタルのハンドル。魔力の光が冒険を照らすぞ！', gemX:50, gemY:51, gemColor:'rainbow', shimmer:true },
   // 🏮 アクセサリー（天井から吊るしてゆらゆら）
-  { id:'lantern_glow', cat:'accessory', name:'光るランタン',     price:300, emoji:'🏮', glow:true, img:true, val:'part_acc_lantern.png', src:'part_acc_lantern.png', desc:'暗いトンネルも安心！やさしく光るランタン' },
-  { id:'compass_gold', cat:'accessory', name:'ゆらゆら羅針盤',   price:250, emoji:'🧭' },
+  { id:'lantern_glow',     cat:'accessory', name:'光るランタン',   price:300, emoji:'🏮', glow:'green',   img:true, val:'part_acc_lantern.png',  src:'part_acc_lantern.png',  desc:'暗いトンネルも安心！やさしく光るランタン' },
+  { id:'compass_yurayura', cat:'accessory', name:'ゆらゆら羅針盤', price:400, emoji:'🧭', glow:'rainbow', img:true, val:'part_acc_compass_shop.png', src:'part_acc_compass.png', desc:'コックピットでゆらゆら動く魔法の羅針盤！冒険がもっと楽しくなるぞ！' },
   // 🎒 おたすけアイテム（消費・複数所持）
   { id:'item_shield', cat:'consumable', name:'ふたばシールド',       price:200, emoji:'🛡️', desc:'1かいミスしても とまらない' },
   { id:'item_double', cat:'consumable', name:'ジュエル2ばいチケット', price:500, emoji:'✨', desc:'もらえるジュエルが2ばい' },
@@ -1790,7 +1796,9 @@ function applyCosmetics() {
     } else {                             // 絵文字アクセサリー
       aitem.textContent = acc.emoji; aitem.style.display = 'block'; aimg.style.display = 'none';
     }
-    ah.classList.toggle('glow', !!acc.glow); ah.style.display = 'block';
+    ah.classList.remove('glow', 'glow-green', 'glow-rainbow');
+    if (acc.glow) { ah.classList.add('glow', 'glow-' + acc.glow); }
+    ah.style.display = 'block';
   } else ah.style.display = 'none';
   // 特別景品の模型（買ったら常に表示。並べて飾る）
   document.getElementById('shipMini').style.display = save.owned.includes('ship_special') ? 'block' : 'none';
