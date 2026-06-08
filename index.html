@@ -1515,6 +1515,97 @@ html, body {
 .ia-info small { font-size:clamp(11px,2.2vw,15px); color:#6a5a8a; }
 .ia-toggle { font-weight:900; font-size:clamp(14px,2.8vw,20px); color:#fff; background:#b0b4bb; border-radius:999px; padding:4px 14px; }
 .item-arm.on .ia-toggle { background:#34c759; }
+
+/* ===========================================================
+   合言葉システム（特別背景テーマ）
+   =========================================================== */
+.secret-open {
+  position: absolute; bottom: calc(7% - 222px); left: 50%; transform: translateX(-50%);
+  z-index: 10; background: #b07cd8; color:#fff; font-family:inherit; font-weight:900;
+  border:none; border-radius:999px; cursor:pointer;
+  box-shadow: 0 6px 0 #7c4aa6, 0 9px 20px rgba(0,0,0,.4);
+  font-size: clamp(15px,2.7vw,23px); padding: 11px 30px;
+}
+.secret-open:active { box-shadow: 0 2px 0 #7c4aa6; transform: translateX(-50%) translateY(4px); }
+
+/* 解放テーマのレイヤー（タイトル表紙の上に重ねる） */
+.theme-layer { position:absolute; inset:0; z-index:2; pointer-events:none; display:none; }
+#titleScreen.theme-gold  .theme-layer,
+#titleScreen.theme-space .theme-layer { display:block; }
+/* 黄金の山テーマ */
+#titleScreen.theme-gold .theme-layer {
+  background:
+    radial-gradient(circle at 50% 18%, rgba(255,236,150,.55), rgba(255,200,70,.18) 45%, rgba(255,190,60,0) 70%),
+    linear-gradient(180deg, rgba(255,210,90,.35), rgba(180,120,20,.32));
+  mix-blend-mode: soft-light; animation: themeGlow 3.5s ease-in-out infinite;
+}
+#titleScreen.theme-gold .theme-layer::after {
+  content:""; position:absolute; inset:0;
+  background-image:
+    radial-gradient(2px 2px at 20% 30%, rgba(255,245,200,.95), transparent 60%),
+    radial-gradient(2px 2px at 70% 22%, rgba(255,245,200,.9), transparent 60%),
+    radial-gradient(3px 3px at 40% 60%, rgba(255,240,180,.9), transparent 60%),
+    radial-gradient(2px 2px at 85% 55%, rgba(255,245,200,.9), transparent 60%),
+    radial-gradient(2px 2px at 12% 70%, rgba(255,245,200,.9), transparent 60%),
+    radial-gradient(3px 3px at 60% 80%, rgba(255,240,180,.9), transparent 60%);
+  animation: themeTwinkle 2.2s ease-in-out infinite;
+}
+/* 宇宙テーマ */
+#titleScreen.theme-space .theme-layer {
+  background:
+    radial-gradient(circle at 50% 35%, rgba(80,40,140,.45), rgba(20,12,50,.78) 60%, rgba(8,6,28,.9) 100%);
+  mix-blend-mode: multiply;
+}
+#titleScreen.theme-space .theme-layer::after {
+  content:""; position:absolute; inset:0; mix-blend-mode:screen;
+  background-image:
+    radial-gradient(2px 2px at 15% 20%, #fff, transparent 60%),
+    radial-gradient(1.5px 1.5px at 35% 45%, #cfe8ff, transparent 60%),
+    radial-gradient(2px 2px at 65% 25%, #fff, transparent 60%),
+    radial-gradient(2.5px 2.5px at 80% 60%, #ffe9b0, transparent 60%),
+    radial-gradient(1.5px 1.5px at 25% 70%, #fff, transparent 60%),
+    radial-gradient(2px 2px at 55% 80%, #cfe8ff, transparent 60%),
+    radial-gradient(2px 2px at 90% 35%, #fff, transparent 60%),
+    radial-gradient(1.5px 1.5px at 8% 50%, #fff, transparent 60%);
+  animation: themeTwinkle 2.6s ease-in-out infinite;
+}
+@keyframes themeGlow { 0%,100%{opacity:.85;} 50%{opacity:1;} }
+@keyframes themeTwinkle { 0%,100%{opacity:.55;} 50%{opacity:1;} }
+
+/* ひみつのあいことば モーダル */
+.secret-box { width: min(92%, 560px); text-align:center; }
+.secret-lead { color:#e7dcff; font-weight:700; font-size:clamp(13px,2.6vw,18px); margin:6px 4px 14px; line-height:1.5; }
+.secret-input {
+  width: 90%; font-family:inherit; font-weight:800; text-align:center;
+  font-size:clamp(20px,4.4vw,30px); padding:12px 14px; border-radius:14px;
+  border:3px solid #ffe14d; background:#fffaf0; color:#3a2570; outline:none;
+}
+.secret-msg { min-height:1.4em; font-weight:900; font-size:clamp(14px,3vw,20px); margin:12px 0 4px; }
+.secret-msg.ok   { color:#7dffa0; }
+.secret-msg.ng   { color:#ff9aa6; }
+.secret-themes { display:flex; flex-wrap:wrap; gap:8px; justify-content:center; margin:4px 0; }
+.secret-chip { color:#fff; font-weight:800; font-size:clamp(12px,2.4vw,16px); background:rgba(255,255,255,.16); border:2px solid #ffe14d; border-radius:999px; padding:6px 14px; cursor:pointer; }
+.secret-chip.active { background:#ffe14d; color:#3a2570; }
+.secret-actions { display:flex; gap:12px; justify-content:center; margin-top:14px; }
+.secret-go { background:#34c759; box-shadow:0 7px 0 #1f8c3c, 0 10px 22px rgba(0,0,0,.4); margin-top:0; }
+.secret-actions .modal-close { margin-top:0; }
+
+/* ===========================================================
+   ふりかえり（まちがえた問題）
+   =========================================================== */
+.clear-btn.review { left: 71%; background: linear-gradient(180deg,#7bd88f,#39a85c); font-size:2.3cqw; }
+.review-list { overflow-y:auto; -webkit-overflow-scrolling:touch; display:flex; flex-direction:column; gap:8px; padding:4px; }
+.review-item {
+  display:flex; align-items:center; gap:10px;
+  background:rgba(255,255,255,.96); border-radius:14px; padding:10px 16px;
+  color:#3a2570; font-weight:900;
+}
+.review-num { flex:0 0 auto; width:clamp(26px,5vw,34px); height:clamp(26px,5vw,34px); border-radius:50%; background:#e8513f; color:#fff; display:flex; align-items:center; justify-content:center; font-size:clamp(13px,2.6vw,18px); }
+.review-eq  { font-size:clamp(18px,3.6vw,26px); letter-spacing:1px; }
+.review-eq .ans { color:#39a85c; }
+.review-perfect { text-align:center; color:#fff; padding:24px 12px; }
+.review-perfect .big { font-size:clamp(30px,7vw,52px); font-weight:900; color:#ffe14d; text-shadow:0 3px 0 #a8331f; }
+.review-perfect .sub { font-size:clamp(15px,3vw,22px); font-weight:800; margin-top:8px; }
 </style>
 </head>
 <body>
@@ -1524,6 +1615,8 @@ html, body {
   <section id="titleScreen" class="screen active">
     <!-- 余白を埋める、ぼかした背景 -->
     <img class="cover-bg" src="cover.png" alt="" aria-hidden="true">
+    <!-- 合言葉で解放する特別背景テーマのレイヤー -->
+    <div class="theme-layer" id="themeLayer" aria-hidden="true"></div>
     <!-- 表紙イラスト全体（タイトルを切らさず表示） -->
     <img class="cover-img" src="cover.png" alt="ひきざんトロッコ 算数大冒険">
     <div class="jewel-pill title-jewel">
@@ -1533,6 +1626,7 @@ html, body {
     <button class="big-btn cover-start" id="startBtn">スタート</button>
     <button class="big-btn shop-open" id="shopBtn">💎 ジュエルショップ</button>
     <button class="big-btn zukan-open" id="zukanBtn">📖 おたから図鑑</button>
+    <button class="secret-open" id="secretBtn">🔑 ひみつのあいことば</button>
   </section>
 
   <!-- ============ おたから図鑑（モーダル） ============ -->
@@ -1544,6 +1638,33 @@ html, body {
       </div>
       <div class="zukan-grid" id="zukanGrid"></div>
       <button class="big-btn modal-close" id="zukanCloseBtn">とじる</button>
+    </div>
+  </div>
+
+  <!-- ============ ひみつのあいことば（モーダル） ============ -->
+  <div class="modal" id="secretModal">
+    <div class="modal-box secret-box">
+      <h2 class="modal-title">🔑 ひみつのあいことば</h2>
+      <p class="secret-lead">クラスの もくひょうを たっせいすると、先生が おしえてくれるよ！</p>
+      <input class="secret-input" id="secretInput" type="text" inputmode="text" autocomplete="off" placeholder="あいことばを いれてね">
+      <p class="secret-msg" id="secretMsg"></p>
+      <div class="secret-themes" id="secretThemes"></div>
+      <div class="secret-actions">
+        <button class="big-btn secret-go" id="secretGoBtn">けってい！</button>
+        <button class="big-btn modal-close" id="secretCloseBtn">とじる</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ ふりかえり：まちがえた問題（モーダル） ============ -->
+  <div class="modal" id="reviewModal">
+    <div class="modal-box">
+      <div class="modal-head">
+        <h2 class="modal-title">📝 まちがえた もんだい</h2>
+        <span class="zukan-progress" id="reviewCount"></span>
+      </div>
+      <div class="review-list" id="reviewList"></div>
+      <button class="big-btn modal-close" id="reviewCloseBtn">とじる</button>
     </div>
   </div>
 
@@ -1683,6 +1804,7 @@ html, body {
       <!-- 実際に押せるボタン（イラストのボタンに重ねる） -->
       <button class="clear-btn home"  id="overHomeBtn">表紙へ戻る</button>
       <button class="clear-btn retry" id="retryBtn">もう一度遊ぶ</button>
+      <button class="clear-btn review" id="overReviewBtn">📝 ふりかえり</button>
     </div>
   </section>
 
@@ -1703,6 +1825,7 @@ html, body {
       <!-- 実際に押せるボタン（イラストのボタンに重ねる） -->
       <button class="clear-btn home"  id="clearHomeBtn">表紙へ戻る</button>
       <button class="clear-btn retry" id="clearRetryBtn">もう一度遊ぶ</button>
+      <button class="clear-btn review" id="clearReviewBtn">📝 ふりかえり</button>
     </div>
   </section>
 
@@ -1782,7 +1905,7 @@ const CAT_INFO = [
 ];
 
 function loadSave() {
-  const def = { jewels:0, owned:[], equipped:{ parts:null, accessory:null }, items:{}, seen:[] };
+  const def = { jewels:0, owned:[], equipped:{ parts:null, accessory:null }, items:{}, seen:[], themes:[], theme:null };
   try {
     const s = JSON.parse(localStorage.getItem(SAVE_KEY) || '{}');
     return {
@@ -1791,16 +1914,87 @@ function loadSave() {
       equipped: Object.assign({ parts:null, accessory:null }, s.equipped || {}),
       items: (s.items && typeof s.items === 'object') ? s.items : {},   // 消費アイテムの所持数
       seen: Array.isArray(s.seen) ? s.seen : [],                        // 図鑑：一度でも入手したID
+      themes: Array.isArray(s.themes) ? s.themes : [],                  // 合言葉で解放した背景テーマ
+      theme: s.theme || null,                                           // 現在えらんでいる背景テーマ
     };
   } catch (e) { return def; }
 }
 let save = loadSave();
 function persist() { try { localStorage.setItem(SAVE_KEY, JSON.stringify(save)); } catch (e) {} }
 
+/* ===========================================================
+   合言葉システム（特別背景テーマの解放）
+   =========================================================== */
+// あいことば → 解放されるテーマ（先生がクラス目標達成時に教える）
+const SECRET_THEMES = {
+  'ふたば':   { id:'gold',  name:'✨ おうごんの山' },
+  'うちゅう': { id:'space', name:'🚀 うちゅう' },
+};
+const THEME_NAME = { gold:'✨ おうごんの山', space:'🚀 うちゅう' };
+
+function applyTheme() {
+  const t = document.getElementById('titleScreen');
+  if (!t) return;
+  t.classList.remove('theme-gold', 'theme-space');
+  if (save.theme) t.classList.add('theme-' + save.theme);
+}
+function normalizeWord(s) {
+  return (s || '').trim().replace(/\s+/g, '')
+    // カタカナ→ひらがなにそろえて、入力ゆれを吸収
+    .replace(/[ァ-ヶ]/g, c => String.fromCharCode(c.charCodeAt(0) - 0x60));
+}
+function openSecretModal() {
+  document.getElementById('secretInput').value = '';
+  const msg = document.getElementById('secretMsg'); msg.textContent = ''; msg.className = 'secret-msg';
+  renderSecretThemes();
+  document.getElementById('secretModal').classList.add('show');
+  setTimeout(() => document.getElementById('secretInput').focus(), 50);
+}
+function closeSecretModal() { document.getElementById('secretModal').classList.remove('show'); }
+function renderSecretThemes() {
+  // 解放済みテーマを切り替えるチップ（タイトル表紙を着せ替え）
+  const box = document.getElementById('secretThemes');
+  box.innerHTML = '';
+  if (!save.themes.length) return;
+  const mk = (id, label) => {
+    const c = document.createElement('button');
+    c.className = 'secret-chip' + (save.theme === id ? ' active' : '');
+    c.textContent = label;
+    c.onclick = () => { save.theme = (save.theme === id ? null : id); persist(); applyTheme(); renderSecretThemes(); };
+    box.appendChild(c);
+  };
+  const def = document.createElement('button');
+  def.className = 'secret-chip' + (!save.theme ? ' active' : '');
+  def.textContent = '🖼️ ふつう';
+  def.onclick = () => { save.theme = null; persist(); applyTheme(); renderSecretThemes(); };
+  box.appendChild(def);
+  save.themes.forEach(id => mk(id, THEME_NAME[id] || id));
+}
+function submitSecret() {
+  const word = normalizeWord(document.getElementById('secretInput').value);
+  const msg = document.getElementById('secretMsg');
+  const hit = SECRET_THEMES[word];
+  if (!hit) {
+    msg.textContent = 'ざんねん…ちがうみたい。もういちど！';
+    msg.className = 'secret-msg ng';
+    return;
+  }
+  const already = save.themes.includes(hit.id);
+  if (!already) save.themes.push(hit.id);
+  save.theme = hit.id;          // 解放したテーマをすぐ適用
+  persist(); applyTheme();
+  msg.textContent = already ? `「${hit.name}」にきりかえたよ！` : `🎉 「${hit.name}」テーマを かいほう！`;
+  msg.className = 'secret-msg ok';
+  document.getElementById('secretInput').value = '';
+  renderSecretThemes();
+  if (typeof playFanfare === 'function' && !already) { initAudio(); playFanfare(); }
+}
+
 /* このランで使用中のお助けアイテム（プレイ開始時にON、消費される） */
 let armedShield = false;   // ふたばシールド：装備中（まだ未使用）
 let armedDouble = false;   // ジュエル2倍：装備中
 let shieldUsed  = false;   // このプレイ中にシールドを使ったか（=終了時に1個消費）
+let wrongList   = [];      // このプレイで間違えた問題 [{a,b,answer}]
 
 function itemCount(id) { return save.items[id] || 0; }
 function markSeen(id) { if (!save.seen.includes(id)) save.seen.push(id); }
@@ -2327,6 +2521,13 @@ function nextProblem() {
   startTimer(); // 制限時間スタート
 }
 
+/* ふりかえり用：間違えた問題を記録（重複は登録しない） */
+function recordWrong() {
+  if (!current) return;
+  const exists = wrongList.some(w => w.a === current.a && w.b === current.b);
+  if (!exists) wrongList.push({ a: current.a, b: current.b, answer: current.answer });
+}
+
 /* ===========================================================
    選択処理
    =========================================================== */
@@ -2357,6 +2558,7 @@ function choose(side) {
     }
   } else if (armedShield) {
     // --- ふたばシールドでミスを1回無効化（岩の衝突をインターセプト）---
+    recordWrong();           // ふりかえり用に間違えた問題を記録
     armedShield = false;     // 使用不可に
     shieldUsed  = true;      // 終了時に1個消費＆アイコンをグレーアウト
     updateActiveItems();
@@ -2370,6 +2572,7 @@ function choose(side) {
     }
   } else {
     // --- 不正解：落下＆暗転 → ゲームオーバー ---
+    recordWrong();           // ふりかえり用に間違えた問題を記録
     gameOver('wrong');
   }
 }
@@ -2421,6 +2624,8 @@ function gameOver(reason) {
   clearInterval(bossAttackId); // ボスの攻撃を止める
   bossAttackId = null;
   elTimerBar.style.transition = 'none'; // タイマーバーを止める
+  if (reason === 'timeup') recordWrong();    // 時間切れも「まちがえた問題」として記録
+  renderReview();                            // ふりかえりUIを更新
   showRocks();                 // 岩が手前に急拡大→激突（シェイク＋土煙はインパクト時に発動）
   awardJewels();   // 失敗でも、それまでに集めた宝石はジュエルになる
   consumeUsedItems();                        // 使ったアイテムを所持数から減らす
@@ -2501,8 +2706,46 @@ function winGame() {
   armedShield = false; armedDouble = false; shieldUsed = false;  // 使用アイテムをリセット
   document.getElementById('clearTime').textContent = formatTime(totalTimeMs);
   renderGemCollection();
+  renderReview();                            // ふりかえりUIを更新（パーフェクト判定）
   showScreen('clear');
 }
+
+/* ===========================================================
+   ふりかえり（まちがえた問題）UI
+   =========================================================== */
+function renderReview() {
+  const n = wrongList.length;
+  // 両リザルト画面のボタン表示を更新（間違いがなければ「パーフェクト」表示）
+  ['overReviewBtn', 'clearReviewBtn'].forEach(id => {
+    const b = document.getElementById(id);
+    if (!b) return;
+    if (n === 0) { b.textContent = '✨ パーフェクト！'; b.classList.add('perfect'); }
+    else { b.textContent = `📝 ふりかえり (${n})`; b.classList.remove('perfect'); }
+  });
+}
+function openReview() {
+  const list = document.getElementById('reviewList');
+  const cnt = document.getElementById('reviewCount');
+  list.innerHTML = '';
+  if (wrongList.length === 0) {
+    cnt.textContent = '';
+    list.innerHTML =
+      '<div class="review-perfect"><div class="big">✨ パーフェクト！ ✨</div>' +
+      '<div class="sub">ぜんもん せいかい！ すごいね！</div></div>';
+  } else {
+    cnt.textContent = `${wrongList.length} もん`;
+    wrongList.forEach((w, i) => {
+      const row = document.createElement('div');
+      row.className = 'review-item';
+      row.innerHTML =
+        `<span class="review-num">${i + 1}</span>` +
+        `<span class="review-eq">${w.a} − ${w.b} = <span class="ans">${w.answer}</span></span>`;
+      list.appendChild(row);
+    });
+  }
+  document.getElementById('reviewModal').classList.add('show');
+}
+function closeReview() { document.getElementById('reviewModal').classList.remove('show'); }
 
 /* ===========================================================
    ゲーム開始
@@ -2512,6 +2755,7 @@ function startGame() {
   stage = 1;
   score = 0;
   totalTimeMs = 0;                  // タイムをリセット
+  wrongList = [];                   // ふりかえり（間違えた問題）をリセット
   elPlay.style.setProperty('--combo', 0); // コンボ演出リセット
   gemCounts = {}; gemTotal = 0;     // 宝石コレクションをリセット
   document.getElementById('gemCount').textContent = 0;
@@ -2585,6 +2829,15 @@ document.getElementById('zukanCloseBtn').addEventListener('click', closeZukan);
 document.getElementById('itemStartBtn').addEventListener('click', confirmItemsAndStart);
 document.getElementById('zoneLeft').addEventListener('click', () => choose('left'));
 document.getElementById('zoneRight').addEventListener('click', () => choose('right'));
+// ひみつのあいことば
+document.getElementById('secretBtn').addEventListener('click', openSecretModal);
+document.getElementById('secretGoBtn').addEventListener('click', submitSecret);
+document.getElementById('secretCloseBtn').addEventListener('click', closeSecretModal);
+document.getElementById('secretInput').addEventListener('keydown', (e) => { if (e.key === 'Enter') submitSecret(); });
+// ふりかえり（まちがえた問題）
+document.getElementById('overReviewBtn').addEventListener('click', openReview);
+document.getElementById('clearReviewBtn').addEventListener('click', openReview);
+document.getElementById('reviewCloseBtn').addEventListener('click', closeReview);
 
 // キーボードでも操作できるように（PCでの動作確認用）
 document.addEventListener('keydown', (e) => {
@@ -2607,9 +2860,10 @@ function jumpToBossIfRequested() {
 window.addEventListener('hashchange', jumpToBossIfRequested);
 jumpToBossIfRequested();
 
-/* 初期表示：ジュエル残高＆装備カスタマイズを反映 */
+/* 初期表示：ジュエル残高＆装備カスタマイズ＆背景テーマを反映 */
 updateJewelUI();
 applyCosmetics();
+applyTheme();
 
 /* スピード線（集中線）を放射状に生成 */
 (function buildSpeedlines() {
