@@ -1324,17 +1324,25 @@ html, body {
   width: 100%; height: auto; display: block;
   filter: drop-shadow(0 0.4cqw 0.8cqw rgba(0,0,0,.45));
 }
-/* 中央の緑の宝石が脈打つ光 */
+/* 中央の宝石が脈打つ光（色はパーツごとに切替） */
 .part-gem {
   position: absolute; left: 51%; top: 55.4%;
   width: 18%; aspect-ratio: 1; transform: translate(-50%,-50%);
   border-radius: 50%; pointer-events: none; mix-blend-mode: screen;
-  background: radial-gradient(circle, rgba(170,255,190,.95) 0%, rgba(60,235,120,.55) 40%, rgba(60,235,120,0) 70%);
   animation: gemPulse 1.6s ease-in-out infinite;
 }
+.part-gem.green   { background: radial-gradient(circle, rgba(170,255,190,.95) 0%, rgba(60,235,120,.55) 40%, rgba(60,235,120,0) 70%); }
+.part-gem.rainbow { background: radial-gradient(circle, rgba(255,255,255,.98) 0%, rgba(190,225,255,.7) 35%, rgba(210,180,255,.3) 60%, rgba(255,255,255,0) 72%); }
 @keyframes gemPulse {
   0%,100% { opacity: .4;  transform: translate(-50%,-50%) scale(.8); }
   50%     { opacity: 1;   transform: translate(-50%,-50%) scale(1.3); }
+}
+/* クリスタル全体が虹色にゆらめく */
+.part-overlay.shimmer .part-img { animation: crystalShimmer 4.5s linear infinite; }
+@keyframes crystalShimmer {
+  0%   { filter: drop-shadow(0 0.4cqw 0.8cqw rgba(0,0,0,.45)) hue-rotate(0deg)   saturate(1.1) brightness(1); }
+  50%  { filter: drop-shadow(0 0.4cqw 0.8cqw rgba(0,0,0,.45)) hue-rotate(180deg) saturate(1.35) brightness(1.12); }
+  100% { filter: drop-shadow(0 0.4cqw 0.8cqw rgba(0,0,0,.45)) hue-rotate(360deg) saturate(1.1) brightness(1); }
 }
 /* アクセサリー：天井から吊るしてゆらゆら */
 .accessory {
@@ -1698,8 +1706,8 @@ const SHOP = [
   { id:'ship_special',    cat:'special', name:'スペース・ジュエル号', price:1000, val:'spaceship.png', img:true },
   { id:'unicorn_special', cat:'special', name:'でんせつのユニコーン', price:1500, val:'unicorn.png',   img:true },
   // 🛠️ カスタムパーツ（ハンドルに透過PNGを重ねる。画像は後日追加）
-  { id:'wheel_dragon',  cat:'parts', name:'伝説のドラゴンハンドル', price:500, img:true, val:'part_wheel_dragon_shop.png', src:'part_wheel_dragon.png', desc:'古代のドラゴンが宿るハンドル。魔力がみなぎるぞ！' },
-  { id:'wheel_crystal', cat:'parts', name:'クリスタルのハンドル', price:500, icon:'💎', src:'part_wheel_crystal.png' },
+  { id:'wheel_dragon',  cat:'parts', name:'伝説のドラゴンハンドル', price:500, img:true, val:'part_wheel_dragon_shop.png', src:'part_wheel_dragon.png', desc:'古代のドラゴンが宿るハンドル。魔力がみなぎるぞ！', gemX:51, gemY:55.4, gemColor:'green' },
+  { id:'wheel_crystal', cat:'parts', name:'伝説のクリスタルハンドル', price:500, img:true, val:'part_wheel_crystal_shop.png', src:'part_wheel_crystal.png', desc:'虹色に輝くクリスタルのハンドル。魔力の光が冒険を照らすぞ！', gemX:50, gemY:51, gemColor:'rainbow', shimmer:true },
   // 🏮 アクセサリー（天井から吊るしてゆらゆら）
   { id:'lantern_glow', cat:'accessory', name:'光るランタン',     price:300, emoji:'🏮', glow:true, img:true, val:'part_acc_lantern.png', src:'part_acc_lantern.png', desc:'暗いトンネルも安心！やさしく光るランタン' },
   { id:'compass_gold', cat:'accessory', name:'ゆらゆら羅針盤',   price:250, emoji:'🧭' },
@@ -1761,7 +1769,13 @@ function applyCosmetics() {
   const pgem = document.getElementById('partGem');
   if (part && part.src) {
     if (pimg.getAttribute('src') !== part.src) { pimg.src = part.src; pimg.style.display = 'block'; }
-    pgem.style.display = part.id === 'wheel_dragon' ? 'block' : 'none';
+    if (part.gemX != null) {
+      pgem.style.left = part.gemX + '%';
+      pgem.style.top  = part.gemY + '%';
+      pgem.className = 'part-gem ' + (part.gemColor || 'green');
+      pgem.style.display = 'block';
+    } else pgem.style.display = 'none';
+    po.classList.toggle('shimmer', !!part.shimmer);
     po.style.display = 'block';
   } else po.style.display = 'none';
   // アクセサリー（天井から吊り下げ・ゆらゆら）
