@@ -1491,15 +1491,113 @@ html, body {
 .modal-close { background:#e8513f; box-shadow:0 7px 0 #a8331f, 0 10px 22px rgba(0,0,0,.4); }
 .zukan-progress { color:#fff; font-weight:800; font-size:clamp(14px,2.8vw,22px); background:rgba(0,0,0,.3); padding:4px 14px; border-radius:12px; }
 
+/* ===========================================================
+   おたから図鑑：古代の魔法の石板テーマ
+   =========================================================== */
+.modal-box.tablet {
+  background:
+    radial-gradient(120% 80% at 50% 0%, rgba(120,80,200,.35), rgba(0,0,0,0) 60%),
+    linear-gradient(180deg, #2d1b4d, #1d1136);
+  border: 5px solid #ffd700;
+  box-shadow: 0 0 0 2px #4efd54 inset, 0 18px 60px rgba(0,0,0,.7), 0 0 40px rgba(120,80,200,.5);
+}
+.zukan-modal .modal-title { color:#ffd700; text-shadow:0 0 14px rgba(255,215,0,.6), 0 3px 0 #6a3a9a; }
+.zukan-progress { color:#4efd54; background:rgba(0,0,0,.35); border:1px solid rgba(78,253,84,.5); }
+/* 石板が浮き上がるオープン演出 */
+.zukan-modal.show .modal-box.tablet { animation: tabletRise .45s cubic-bezier(.2,1.2,.3,1) both; }
+@keyframes tabletRise {
+  0%   { transform: translateY(26px) scale(.86) rotateX(12deg); opacity: 0; }
+  100% { transform: translateY(0) scale(1) rotateX(0); opacity: 1; }
+}
+
 /* 図鑑グリッド */
-.zukan-grid { overflow-y:auto; -webkit-overflow-scrolling:touch; }
-.zukan-cat { color:#fff; font-weight:900; font-size:clamp(15px,2.8vw,22px); margin:10px 4px 6px; }
-.zukan-row { display:grid; grid-template-columns:repeat(4,1fr); gap:10px; }
-.zukan-cell { background:rgba(255,255,255,.1); border-radius:14px; padding:8px 4px; text-align:center; display:flex; flex-direction:column; align-items:center; gap:4px; }
-.zukan-ic { width:clamp(44px,9vw,72px); height:clamp(44px,9vw,72px); object-fit:contain; display:flex; align-items:center; justify-content:center; font-size:clamp(30px,6vw,50px); }
-.zukan-ic.locked { filter: brightness(0) opacity(.55); }   /* 画像は黒シルエット */
-.zukan-ic.emoji.locked { filter:none; color:#000; opacity:.5; }
-.zukan-name { color:#fff; font-weight:800; font-size:clamp(11px,2.2vw,15px); }
+.zukan-grid { overflow-y:auto; -webkit-overflow-scrolling:touch; padding: 2px; }
+.zukan-cat { color:#ffe9a8; font-weight:900; font-size:clamp(15px,2.8vw,22px); margin:14px 4px 8px; text-shadow:0 2px 0 rgba(0,0,0,.4); }
+/* レスポンシブ：横3〜4列（端末幅に応じて自動調整） */
+.zukan-row { display:grid; grid-template-columns:repeat(auto-fill, minmax(132px, 1fr)); gap:12px; }
+.zukan-cell {
+  background: linear-gradient(180deg, rgba(255,255,255,.12), rgba(255,255,255,.05));
+  border: 3px solid #6a5a8a; border-radius:16px; padding:10px 6px 9px;
+  text-align:center; display:flex; flex-direction:column; align-items:center; gap:5px;
+  font-family:inherit; cursor:pointer; transition: transform .1s, box-shadow .15s;
+}
+.zukan-cell:active { transform: scale(.96); }
+.zukan-cell:hover { box-shadow: 0 0 16px rgba(255,255,255,.18); }
+/* レアリティ枠：銅 / 銀 / 金 */
+.zukan-cell.r-common { border-color:#cd7f32; box-shadow: 0 0 8px rgba(205,127,50,.4); }
+.zukan-cell.r-rare   { border-color:#c8d0e0; box-shadow: 0 0 10px rgba(200,208,224,.45); }
+.zukan-cell.r-legend { border-color:#ffd700; box-shadow: 0 0 14px rgba(255,215,0,.55); }
+.zukan-cell.locked { opacity:.92; }
+.zukan-cell.locked.r-legend { box-shadow: 0 0 8px rgba(255,215,0,.25); }
+.zc-frame { width:100%; display:flex; align-items:center; justify-content:center; min-height:clamp(56px,11vw,86px); }
+.zukan-ic { width:clamp(48px,10vw,82px); height:clamp(48px,10vw,82px); object-fit:contain; display:flex; align-items:center; justify-content:center; font-size:clamp(30px,6vw,50px); }
+.zukan-ic.locked { filter: brightness(0) opacity(.6); }   /* 画像は黒シルエット */
+.zukan-ic.emoji.locked { filter:none; color:#000; opacity:.55; }
+.zukan-name { color:#fff; font-weight:800; font-size:clamp(11px,2.2vw,15px); line-height:1.2; }
+.zukan-rarity { font-size:clamp(9px,1.9vw,12px); font-weight:900; color:#ffe9a8; }
+.zukan-hint { font-size:clamp(9px,1.8vw,12px); color:#bda6e6; line-height:1.25; }
+.zukan-cell.figure:not(.locked) { border-color: transparent; background-clip: padding-box; position: relative; }
+.zukan-cell.figure:not(.locked)::before {
+  content:""; position:absolute; inset:-3px; border-radius:16px; z-index:-1;
+  background: conic-gradient(from 0deg,#ff5d6c,#ffd24d,#7dff9b,#5dc8ff,#b15dff,#ff5d6c);
+  animation: diaShine 3s linear infinite;
+}
+
+/* ===========================================================
+   おたから詳細（モーダル内モーダル）
+   =========================================================== */
+.zukan-detail-modal { z-index: 85; background: rgba(8,4,20,.78); }
+.zd-box {
+  position: relative; width: min(90%, 460px); max-height: 90%; overflow-y: auto;
+  background: linear-gradient(180deg, #34215c, #211243);
+  border: 5px solid #ffd700; border-radius: 24px;
+  padding: 22px 22px 26px; text-align: center;
+  box-shadow: 0 18px 60px rgba(0,0,0,.7);
+}
+.zukan-detail-modal.show .zd-box { animation: tabletRise .4s cubic-bezier(.2,1.3,.3,1) both; }
+.zd-box.r-common { border-color:#cd7f32; }
+.zd-box.r-rare   { border-color:#c8d0e0; }
+.zd-box.r-legend { border-color:#ffd700; }
+.zd-close {
+  position: absolute; top: 8px; right: 12px; z-index: 3;
+  width: 40px; height: 40px; border-radius: 50%; border: none; cursor: pointer;
+  background: #e8513f; color: #fff; font-size: 26px; font-weight: 900; line-height: 1;
+  box-shadow: 0 4px 0 #a8331f;
+}
+.zd-img-wrap { position: relative; z-index: 2; display: flex; align-items: center; justify-content: center; min-height: 38vh; }
+.zd-img { max-width: 78%; max-height: 38vh; height: auto; object-fit: contain; filter: drop-shadow(0 6px 14px rgba(0,0,0,.5)); }
+.zd-img.locked { filter: brightness(0) opacity(.6); }
+.zd-emoji { font-size: clamp(80px,22vw,150px); }
+.zd-emoji.locked { filter: brightness(0); opacity: .55; }
+.zd-rarity { position: relative; z-index: 2; font-size: clamp(13px,3vw,18px); font-weight: 900; margin-top: 4px; }
+.zd-rarity.rr-common { color:#e0a064; } .zd-rarity.rr-rare { color:#d8e0f0; } .zd-rarity.rr-legend { color:#ffd700; }
+.zd-name { position: relative; z-index: 2; color: #fff; font-size: clamp(20px,4.6vw,32px); font-weight: 900; margin: 4px 0 6px; text-shadow: 0 2px 0 rgba(0,0,0,.4); }
+.zd-desc { position: relative; z-index: 2; color: #e7dcff; font-size: clamp(13px,2.8vw,17px); font-weight: 600; line-height: 1.55; margin: 0 4px 8px; }
+.zd-date { position: relative; z-index: 2; color: #4efd54; font-weight: 800; font-size: clamp(12px,2.5vw,15px); }
+.zd-equip {
+  position: relative; z-index: 2; margin-top: 12px;
+  background: #34c759; box-shadow: 0 7px 0 #1f8c3c, 0 10px 22px rgba(0,0,0,.4);
+}
+.zd-equip.on { background: #b0b4bb; box-shadow: 0 7px 0 #7c808a, 0 10px 22px rgba(0,0,0,.4); }
+/* 伝説のナビゲーターフィギュア専用：虹色アニメ背景＋星と歯車 */
+.zd-box.figure-special {
+  border-color: #fff;
+  background: linear-gradient(135deg,#3a1d6e,#5a2a8a,#2a4d8a,#2a8a6a,#6a2a8a);
+  background-size: 400% 400%; animation: figBg 8s ease infinite;
+}
+@keyframes figBg { 0%{background-position:0% 50%;} 50%{background-position:100% 50%;} 100%{background-position:0% 50%;} }
+.zd-box.figure-special::before {
+  content:""; position:absolute; inset:-5px; border-radius:26px; z-index:0;
+  background: conic-gradient(from 0deg,#ff5d6c,#ffd24d,#7dff9b,#5dc8ff,#b15dff,#ff5d6c);
+  filter: blur(10px); opacity:.7; animation: diaShine 3s linear infinite;
+}
+.zd-particles { position: absolute; inset: 0; z-index: 1; pointer-events: none; overflow: hidden; border-radius: 22px; }
+.zd-particles span { position: absolute; opacity: .9; animation: zdFloat linear infinite; }
+@keyframes zdFloat {
+  0%   { transform: translateY(8px) rotate(0deg) scale(.8); opacity: .2; }
+  50%  { opacity: 1; }
+  100% { transform: translateY(-26px) rotate(360deg) scale(1.1); opacity: .2; }
+}
 
 /* プレイ前アイテム選択 */
 .item-arm-list { display:flex; flex-direction:column; gap:10px; overflow-y:auto; }
@@ -1757,8 +1855,8 @@ html, body {
   </section>
 
   <!-- ============ おたから図鑑（モーダル） ============ -->
-  <div class="modal" id="zukanModal">
-    <div class="modal-box">
+  <div class="modal zukan-modal" id="zukanModal">
+    <div class="modal-box tablet">
       <div class="modal-head">
         <h2 class="modal-title">📖 おたから図鑑</h2>
         <span class="zukan-progress" id="zukanProgress"></span>
@@ -1766,6 +1864,11 @@ html, body {
       <div class="zukan-grid" id="zukanGrid"></div>
       <button class="big-btn modal-close" id="zukanCloseBtn">とじる</button>
     </div>
+  </div>
+
+  <!-- ============ おたから詳細（モーダル内モーダル） ============ -->
+  <div class="modal zukan-detail-modal" id="zukanDetail">
+    <div class="zd-box" id="zdBox"></div>
   </div>
 
   <!-- ============ ひみつのあいことば（モーダル） ============ -->
@@ -2032,9 +2135,9 @@ const SAVE_KEY = 'trocco_save_v1';
 // 購入できるアイテム一覧
 const SHOP = [
   // 🌟 とくべつ景品（レア・完成済み）
-  { id:'sword_special',   cat:'special', name:'でんせつの剣',         price:2000, val:'sword.png',     img:true },
-  { id:'ship_special',    cat:'special', name:'スペース・ジュエル号', price:1000, val:'spaceship.png', img:true },
-  { id:'unicorn_special', cat:'special', name:'でんせつのユニコーン', price:1500, val:'unicorn.png',   img:true },
+  { id:'sword_special',   cat:'special', name:'でんせつの剣',         price:2000, val:'sword.png',     img:true, desc:'にじいろに かがやく でんせつの剣。正解すると 斬撃エフェクトが でるぞ！' },
+  { id:'ship_special',    cat:'special', name:'スペース・ジュエル号', price:1000, val:'spaceship.png', img:true, desc:'ジュエルを たくさん あつめて つくった、宇宙をかける スペース・ジュエル号！' },
+  { id:'unicorn_special', cat:'special', name:'でんせつのユニコーン', price:1500, val:'unicorn.png',   img:true, desc:'にじを かける でんせつの ユニコーン。コックピットの 棚にかざれる！' },
   // 🛠️ カスタムパーツ（ハンドルに透過PNGを重ねる。画像は後日追加）
   { id:'wheel_dragon',  cat:'parts', name:'伝説のドラゴンハンドル', price:500, img:true, val:'part_wheel_dragon_shop.png', src:'part_wheel_dragon.png', desc:'古代のドラゴンが宿るハンドル。魔力がみなぎるぞ！', gemX:51, gemY:55.4, gemColor:'green' },
   { id:'wheel_crystal', cat:'parts', name:'伝説のクリスタルハンドル', price:500, img:true, val:'part_wheel_crystal_shop.png', src:'part_wheel_crystal.png', desc:'虹色に輝くクリスタルのハンドル。魔力の光が冒険を照らすぞ！', gemX:50, gemY:51, gemColor:'rainbow', shimmer:true },
@@ -2054,7 +2157,7 @@ const CAT_INFO = [
 ];
 
 function loadSave() {
-  const def = { jewels:0, owned:[], equipped:{ parts:null, accessory:null }, items:{}, seen:[], themes:[], theme:null, consecutiveShieldPerfects:0 };
+  const def = { jewels:0, owned:[], equipped:{ parts:null, accessory:null }, items:{}, seen:[], themes:[], theme:null, consecutiveShieldPerfects:0, acquired:{} };
   try {
     const s = JSON.parse(localStorage.getItem(SAVE_KEY) || '{}');
     return {
@@ -2066,6 +2169,7 @@ function loadSave() {
       themes: Array.isArray(s.themes) ? s.themes : [],                  // 合言葉で解放した背景テーマ
       theme: s.theme || null,                                           // 現在えらんでいる背景テーマ
       consecutiveShieldPerfects: s.consecutiveShieldPerfects || 0,      // シールド装備パーフェクト連続回数（隠し解放用）
+      acquired: (s.acquired && typeof s.acquired === 'object') ? s.acquired : {},  // 図鑑：アイテム入手日 {id:timestamp}
     };
   } catch (e) { return def; }
 }
@@ -2149,8 +2253,36 @@ let wrongList   = [];      // このプレイで間違えた問題 [{a,b,answer}
 let figureJustUnlocked = false;     // 今回のクリアでフィギュアを解放したか
 
 function itemCount(id) { return save.items[id] || 0; }
-function markSeen(id) { if (!save.seen.includes(id)) save.seen.push(id); }
+function markSeen(id) {
+  if (!save.seen.includes(id)) save.seen.push(id);
+  if (!save.acquired) save.acquired = {};
+  if (!save.acquired[id]) save.acquired[id] = Date.now();   // 入手日を記録（初回のみ）
+}
 function isUnlocked(id) { return save.owned.includes(id) || save.seen.includes(id) || itemCount(id) > 0; }
+
+/* レアリティ：消費=コモン / アクセサリー=レア / パーツ・特別景品=レジェンド */
+function rarityOf(item) {
+  if (item.cat === 'consumable') return 'common';
+  if (item.cat === 'accessory')  return 'rare';
+  return 'legend';
+}
+const RARITY_INFO = {
+  common: { label:'🥉 コモン',    color:'#cd7f32' },
+  rare:   { label:'🥈 レア',      color:'#c8d0e0' },
+  legend: { label:'🥇 レジェンド', color:'#ffd700' },
+};
+/* 入手条件のヒント */
+function hintOf(item) {
+  if (item.secret) return '入手じょうけん：ひみつのミッション';
+  return '入手じょうけん：ショップで こうにゅう';
+}
+/* 入手日を「2026/6/8」の形に */
+function acquiredDateStr(id) {
+  const t = save.acquired && save.acquired[id];
+  if (!t) return '';
+  const d = new Date(t);
+  return `${d.getFullYear()}/${d.getMonth() + 1}/${d.getDate()}`;
+}
 
 /* 全てのジュエル残高表示を更新 */
 function updateJewelUI() {
@@ -2350,26 +2482,111 @@ function openZukan() {
     const h = document.createElement('div'); h.className = 'zukan-cat'; h.textContent = title; wrap.appendChild(h);
     const grid = document.createElement('div'); grid.className = 'zukan-row';
     SHOP.filter(i => i.cat === cat).forEach(item => {
-      const cell = document.createElement('div'); cell.className = 'zukan-cell';
-      const unlocked = isUnlocked(item.id);
-      let ic;
-      if (item.img) { ic = document.createElement('img'); ic.className = 'zukan-ic'; ic.src = item.val; ic.alt = ''; }
-      else { ic = document.createElement('div'); ic.className = 'zukan-ic emoji'; ic.textContent = item.icon || item.emoji || '❓'; }
-      if (!unlocked) { ic.classList.add('locked'); if (!item.img) ic.textContent = '？'; }  // シルエット/？
-      cell.appendChild(ic);
-      const nm = document.createElement('div'); nm.className = 'zukan-name';
-      nm.textContent = unlocked ? item.name : '？？？';
-      cell.appendChild(nm);
-      grid.appendChild(cell);
+      grid.appendChild(makeZukanCell(item));
     });
     wrap.appendChild(grid);
   });
   // コンプ率
   const total = SHOP.length, got = SHOP.filter(i => isUnlocked(i.id)).length;
   document.getElementById('zukanProgress').textContent = `${got} / ${total} コンプリート`;
+  closeZukanDetail();
   document.getElementById('zukanModal').classList.add('show');
 }
-function closeZukan() { document.getElementById('zukanModal').classList.remove('show'); }
+function makeZukanCell(item) {
+  const unlocked = isUnlocked(item.id);
+  const rarity = rarityOf(item);
+  const cell = document.createElement('button');
+  cell.className = `zukan-cell r-${rarity}` + (unlocked ? '' : ' locked') + (item.id === 'figure_navigator' ? ' figure' : '');
+  // アイコン枠
+  const frame = document.createElement('div'); frame.className = 'zc-frame';
+  let ic;
+  if (item.img) { ic = document.createElement('img'); ic.className = 'zukan-ic'; ic.src = item.val; ic.alt = ''; }
+  else { ic = document.createElement('div'); ic.className = 'zukan-ic emoji'; ic.textContent = item.icon || item.emoji || '❓'; }
+  if (!unlocked) { ic.classList.add('locked'); if (!item.img) ic.textContent = '？'; }
+  frame.appendChild(ic);
+  cell.appendChild(frame);
+  // 名前
+  const nm = document.createElement('div'); nm.className = 'zukan-name';
+  nm.textContent = unlocked ? item.name : '？？？';
+  cell.appendChild(nm);
+  // レアリティ / 入手ヒント
+  if (unlocked) {
+    const rb = document.createElement('div'); rb.className = 'zukan-rarity';
+    rb.textContent = RARITY_INFO[rarity].label; cell.appendChild(rb);
+  } else {
+    const ht = document.createElement('div'); ht.className = 'zukan-hint'; ht.textContent = hintOf(item); cell.appendChild(ht);
+  }
+  cell.onclick = () => openZukanDetail(item);
+  return cell;
+}
+function closeZukan() { document.getElementById('zukanModal').classList.remove('show'); closeZukanDetail(); }
+
+/* おたから詳細（モーダル内モーダル） */
+function openZukanDetail(item) {
+  const unlocked = isUnlocked(item.id);
+  const rarity = rarityOf(item);
+  const box = document.getElementById('zdBox');
+  box.className = `zd-box r-${rarity}` + (item.id === 'figure_navigator' && unlocked ? ' figure-special' : '');
+  const dateStr = acquiredDateStr(item.id);
+  const equippable = (item.cat === 'parts' || item.cat === 'accessory') && unlocked;
+  const isEquipped = equippable && save.equipped[item.cat] === item.id;
+  let html = '';
+  html += '<button class="zd-close" id="zdCloseBtn" aria-label="とじる">×</button>';
+  html += (item.id === 'figure_navigator' && unlocked) ? '<div class="zd-particles" id="zdParticles"></div>' : '';
+  html += '<div class="zd-img-wrap">';
+  if (item.img) html += `<img class="zd-img${unlocked ? '' : ' locked'}" src="${item.val}" alt="">`;
+  else html += `<div class="zd-emoji${unlocked ? '' : ' locked'}">${unlocked ? (item.icon || item.emoji || '❓') : '？'}</div>`;
+  html += '</div>';
+  html += `<div class="zd-rarity rr-${rarity}">${RARITY_INFO[rarity].label}</div>`;
+  html += `<h3 class="zd-name">${unlocked ? item.name : '？？？'}</h3>`;
+  html += `<p class="zd-desc">${unlocked ? (item.desc || '') : hintOf(item)}</p>`;
+  if (unlocked && dateStr) html += `<p class="zd-date">📅 入手日：${dateStr}</p>`;
+  if (equippable) {
+    html += `<button class="big-btn zd-equip ${isEquipped ? 'on' : ''}" id="zdEquipBtn">${isEquipped ? 'はずす' : 'そうびする'}</button>`;
+  }
+  box.innerHTML = html;
+  box.querySelector('#zdCloseBtn').onclick = closeZukanDetail;
+  const eq = box.querySelector('#zdEquipBtn');
+  if (eq) eq.onclick = () => {
+    save.equipped[item.cat] = isEquipped ? null : item.id;
+    persist(); applyCosmetics();
+    openZukanDetail(item);            // ボタン表示を更新
+    openZukanGridRefresh();           // 背後のグリッドも更新
+  };
+  // フィギュア専用：星と歯車のパーティクル
+  if (item.id === 'figure_navigator' && unlocked) spawnDetailParticles();
+  document.getElementById('zukanDetail').classList.add('show');
+}
+function openZukanGridRefresh() {
+  // 開いたまま図鑑グリッドを作り直す（装備状態の反映用）
+  const modalShown = document.getElementById('zukanModal').classList.contains('show');
+  const wrap = document.getElementById('zukanGrid');
+  if (!modalShown || !wrap) return;
+  wrap.innerHTML = '';
+  CAT_INFO.forEach(({ cat, title }) => {
+    const h = document.createElement('div'); h.className = 'zukan-cat'; h.textContent = title; wrap.appendChild(h);
+    const grid = document.createElement('div'); grid.className = 'zukan-row';
+    SHOP.filter(i => i.cat === cat).forEach(item => grid.appendChild(makeZukanCell(item)));
+    wrap.appendChild(grid);
+  });
+}
+function closeZukanDetail() { document.getElementById('zukanDetail').classList.remove('show'); }
+function spawnDetailParticles() {
+  const box = document.getElementById('zdParticles');
+  if (!box) return;
+  box.innerHTML = '';
+  const marks = ['⭐','⚙️','✨','🌟','⚙️','💫'];
+  for (let i = 0; i < 14; i++) {
+    const s = document.createElement('span');
+    s.textContent = marks[i % marks.length];
+    s.style.left = Math.random() * 100 + '%';
+    s.style.top = Math.random() * 100 + '%';
+    s.style.fontSize = (1.4 + Math.random() * 1.6) + 'rem';
+    s.style.animationDuration = (3 + Math.random() * 3) + 's';
+    s.style.animationDelay = (-Math.random() * 4) + 's';
+    box.appendChild(s);
+  }
+}
 
 const elQuestion  = document.getElementById('question');
 const elStageNum  = document.getElementById('stageNum');
@@ -3112,6 +3329,8 @@ document.getElementById('shopBtn').addEventListener('click', openShop);
 document.getElementById('shopBackBtn').addEventListener('click', () => showScreen('title'));
 document.getElementById('zukanBtn').addEventListener('click', openZukan);
 document.getElementById('zukanCloseBtn').addEventListener('click', closeZukan);
+// 詳細モーダルは外側タップで閉じる
+document.getElementById('zukanDetail').addEventListener('click', (e) => { if (e.target.id === 'zukanDetail') closeZukanDetail(); });
 document.getElementById('itemStartBtn').addEventListener('click', confirmItemsAndStart);
 document.getElementById('zoneLeft').addEventListener('click', () => choose('left'));
 document.getElementById('zoneRight').addEventListener('click', () => choose('right'));
