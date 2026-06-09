@@ -83,6 +83,7 @@ html, body {
   object-fit: contain;
   object-position: center;
   z-index: 1;
+  cursor: default;   /* 隠しトリガーだが、見た目はふつうの画像のまま（指マークにしない） */
 }
 /* 表紙のスタートボタン（イラストの下のほうに重ねる） */
 .cover-start {
@@ -2021,8 +2022,7 @@ html, body {
     <button class="big-btn shop-open" id="shopBtn">💎 ジュエルショップ</button>
     <button class="big-btn zukan-open" id="zukanBtn">📖 おたから図鑑</button>
     <button class="secret-open" id="secretBtn">🔑 ひみつのあいことば</button>
-    <!-- 隠しコマンド：九九モードの「ひみつの呪文」 -->
-    <button class="kuku-gear" id="kukuGearBtn" aria-label="ひみつの呪文">⚙️</button>
+    <!-- 隠しコマンド：九九モードの「ひみつの呪文」は、タイトルロゴを2秒以内に5回タップで開く -->
   </section>
 
   <!-- ============ おたから図鑑（モーダル） ============ -->
@@ -3922,8 +3922,24 @@ document.getElementById('modeChoiceBtn').addEventListener('click', () => setInpu
 // 出題ジャンル選択（ひっ算 / かけ算）
 document.getElementById('subjSubBtn').addEventListener('click', () => setSubject('subtraction'));
 document.getElementById('subjMulBtn').addEventListener('click', () => setSubject('multiply'));
-// 九九のひみつの呪文
-document.getElementById('kukuGearBtn').addEventListener('click', openKukuModal);
+// 九九のひみつの呪文（完全に隠されたトリガー：タイトルロゴを2秒以内に5回タップ）
+(function setupSecretTitleTap() {
+  const logo = document.querySelector('#titleScreen .cover-img');
+  if (!logo) return;
+  const NEED = 5, WINDOW_MS = 2000, RESET_GAP_MS = 500;
+  let count = 0, lastTap = 0, firstTap = 0;
+  logo.addEventListener('click', () => {
+    const now = Date.now();
+    if (now - lastTap > RESET_GAP_MS) count = 0;   // 間隔が空いたらリセット
+    if (count === 0) firstTap = now;
+    count++;
+    lastTap = now;
+    if (count >= NEED && (now - firstTap) <= WINDOW_MS) {
+      count = 0;
+      openKukuModal();
+    }
+  });
+})();
 document.getElementById('kukuGoBtn').addEventListener('click', submitKuku);
 document.getElementById('kukuCloseBtn').addEventListener('click', closeKukuModal);
 document.getElementById('kukuInput').addEventListener('keydown', (e) => { if (e.key === 'Enter') submitKuku(); });
