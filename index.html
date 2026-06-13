@@ -2150,9 +2150,9 @@ html, body {
     <button class="big-btn cover-timeattack title-corner tc-left" id="timeAttackBtn">⏱️ タイムアタック</button>
     <button class="big-btn zukan-open title-corner tc-right" id="zukanBtn">📖 おたから図鑑</button>
     <div class="title-menu">
-      <button class="big-btn cover-start" id="startBtn">🚂 ふつうの冒険</button>
+      <button class="big-btn cover-start" id="startBtn">🚂 冒険</button>
       <button class="big-btn shop-open" id="shopBtn">💎 ジュエルショップ</button>
-      <button class="secret-open" id="secretBtn">🔑 ひみつのあいことば</button>
+      <button class="secret-open" id="secretBtn" style="display: none;">🔑 ひみつのあいことば</button>
     </div>
     <!-- 隠しコマンド：九九モードの「ひみつの呪文」は、タイトルロゴを2秒以内に5回タップで開く -->
   </section>
@@ -2182,6 +2182,7 @@ html, body {
       <input class="secret-input" id="secretInput" type="text" inputmode="text" autocomplete="off" placeholder="あいことばを いれてね">
       <p class="secret-msg" id="secretMsg"></p>
       <div class="secret-themes" id="secretThemes"></div>
+      <div class="kuku-stages" id="kukuStages" style="margin-top: 15px;"></div>
       <div class="secret-actions">
         <button class="big-btn secret-go" id="secretGoBtn">けってい！</button>
         <button class="big-btn modal-close" id="secretCloseBtn">とじる</button>
@@ -2208,7 +2209,6 @@ html, body {
       <p class="secret-lead">先生から おしえてもらった「九九のじゅもん」を いれると、その段が つかえるようになるよ！</p>
       <input class="secret-input" id="kukuInput" type="text" inputmode="text" autocomplete="off" placeholder="じゅもんを いれてね">
       <p class="secret-msg" id="kukuMsg"></p>
-      <div class="kuku-stages" id="kukuStages"></div>
       <div class="secret-actions">
         <button class="big-btn secret-go" id="kukuGoBtn">となえる！</button>
         <button class="big-btn modal-close" id="kukuCloseBtn">とじる</button>
@@ -2637,6 +2637,7 @@ function openSecretModal() {
   document.getElementById('secretInput').value = '';
   const msg = document.getElementById('secretMsg'); msg.textContent = ''; msg.className = 'secret-msg';
   renderSecretThemes();
+  renderKukuStages();
   document.getElementById('secretModal').classList.add('show');
   setTimeout(() => document.getElementById('secretInput').focus(), 50);
 }
@@ -2665,6 +2666,27 @@ function submitSecret() {
   const msg = document.getElementById('secretMsg');
   const hit = SECRET_THEMES[word];
   if (!hit) {
+    // 九九のじゅもんの判定を追加
+    const dan = KUKU_SPELLS[word];
+    if (dan) {
+      const already = save.unlockedKukuStages.includes(dan);
+      if (already) {
+        msg.textContent = `${dan}の段は すでに かいほうずみだよ！`;
+        msg.className = 'secret-msg ok';
+        return;
+      }
+      save.unlockedKukuStages.push(dan);
+      save.unlockedKukuStages.sort((a, b) => a - b);
+      persist();
+      msg.textContent = `🎉 ${dan}の段を かいほう！`;
+      msg.className = 'secret-msg ok';
+      document.getElementById('secretInput').value = '';
+      renderKukuStages();
+      initAudio();
+      if (typeof playFanfare === 'function') playFanfare();
+      showKukuUnlock(dan);
+      return;
+    }
     msg.textContent = 'ざんねん…ちがうみたい。もういちど！';
     msg.className = 'secret-msg ng';
     return;
@@ -2677,6 +2699,7 @@ function submitSecret() {
   msg.className = 'secret-msg ok';
   document.getElementById('secretInput').value = '';
   renderSecretThemes();
+  renderKukuStages();
   if (typeof playFanfare === 'function' && !already) { initAudio(); playFanfare(); }
 }
 
@@ -4204,7 +4227,7 @@ document.getElementById('modeChoiceBtn').addEventListener('click', () => setInpu
 // 出題ジャンル選択（ひっ算 / かけ算）
 document.getElementById('subjSubBtn').addEventListener('click', () => setSubject('subtraction'));
 document.getElementById('subjMulBtn').addEventListener('click', () => setSubject('multiply'));
-// 九九のひみつの呪文（完全に隠されたトリガー：タイトルロゴを2秒以内に5回タップ）
+// 秘密の合言葉（完全に隠されたトリガー：タイトルロゴを2秒以内に5回タップして出現させる）
 (function setupSecretTitleTap() {
   const logo = document.querySelector('#titleScreen .cover-img');
   if (!logo) return;
@@ -4218,7 +4241,12 @@ document.getElementById('subjMulBtn').addEventListener('click', () => setSubject
     lastTap = now;
     if (count >= NEED && (now - firstTap) <= WINDOW_MS) {
       count = 0;
-      openKukuModal();
+      const btn = document.getElementById('secretBtn');
+      if (btn) {
+        btn.style.display = '';
+        initAudio();
+        if (typeof playFanfare === 'function') playFanfare();
+      }
     }
   });
 })();
@@ -4272,6 +4300,10 @@ applyCosmetics();
 applyTheme();
 inputMode = save.inputMode;
 jewelMultiplier = (inputMode === 'type') ? 1.0 : 0.33;
+if (save.themes.length > 0 || save.unlockedKukuStages.length > 0) {
+  const btn = document.getElementById('secretBtn');
+  if (btn) btn.style.display = '';
+}
 
 /* スピード線（集中線）を放射状に生成 */
 (function buildSpeedlines() {
