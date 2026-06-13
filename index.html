@@ -4300,10 +4300,6 @@ applyCosmetics();
 applyTheme();
 inputMode = save.inputMode;
 jewelMultiplier = (inputMode === 'type') ? 1.0 : 0.33;
-if (save.themes.length > 0 || save.unlockedKukuStages.length > 0) {
-  const btn = document.getElementById('secretBtn');
-  if (btn) btn.style.display = '';
-}
 
 /* スピード線（集中線）を放射状に生成 */
 (function buildSpeedlines() {
