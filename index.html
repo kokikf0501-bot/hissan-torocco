@@ -2102,12 +2102,13 @@ html, body {
 }
 .ta-card-head { font-size: clamp(18px,3.8vw,26px); font-weight: 900; color: #ffe9a8; }
 .ta-record-label { font-size: clamp(15px,3vw,20px); font-weight: 800; color: #cfe8ff; margin-top: 8px; }
-.ta-record { line-height: 1; margin: 2px 0 6px; }
+.ta-record { line-height: 1.05; margin: 2px 0 6px; }
 .ta-num {
-  font-size: clamp(70px,20vw,150px); font-weight: 900; color: #ffe14d;
+  display: block;                 /* 数字は1行で大きく */
+  font-size: clamp(64px,18vw,140px); font-weight: 900; color: #ffe14d;
   -webkit-text-stroke: 4px #a8331f; text-shadow: 0 0 28px rgba(255,225,77,.9);
 }
-.ta-unit { font-size: clamp(24px,6vw,44px); font-weight: 900; color: #fff; margin-left: 4px; }
+.ta-unit { display: block; white-space: nowrap; font-size: clamp(22px,5.5vw,40px); font-weight: 900; color: #fff; }
 .ta-jewels { font-size: clamp(16px,3.4vw,24px); font-weight: 800; color: #9be7ff; margin: 4px 0 12px; }
 .ta-jewels b { color: #ffd24d; font-size: 1.15em; }
 .ta-shot {
@@ -2115,7 +2116,8 @@ html, body {
   background: rgba(255,255,255,.12); border: 2px dashed rgba(255,255,255,.5);
   border-radius: 14px; padding: 10px 12px; margin-bottom: 16px;
 }
-.ta-btns { display: flex; gap: 12px; justify-content: center; }
+.ta-btns { display: flex; flex-direction: column; gap: 10px; align-items: stretch; }
+.ta-btns .big-btn { width: 100%; white-space: nowrap; font-size: clamp(18px,4vw,26px); padding: 13px 18px; }
 .ta-again { background:#34c759; box-shadow:0 7px 0 #1f8c3c, 0 10px 22px rgba(0,0,0,.4); }
 .ta-home  { background:#ff7a8a; box-shadow:0 7px 0 #a8273c, 0 10px 22px rgba(0,0,0,.4); }
 </style>
@@ -2450,8 +2452,8 @@ html, body {
       <div class="ta-jewels">💎 ゲットしたジュエル：<b id="taResultJewels">0</b></div>
       <div class="ta-shot">📸 このがめんを スクリーンショットして、せんせいに おくろう！</div>
       <div class="ta-btns">
-        <button class="big-btn ta-again" id="taAgainBtn">もう1回！</button>
-        <button class="big-btn ta-home" id="taHomeBtn">表紙へ戻る</button>
+        <button class="big-btn ta-again" id="taAgainBtn">⏱️ もう1かい！</button>
+        <button class="big-btn ta-home" id="taHomeBtn">🏠 ひょうしへ もどる</button>
       </div>
     </div>
   </section>
