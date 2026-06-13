@@ -1125,7 +1125,16 @@ html, body {
 }
 .jewel-pill .jewel-amount::before { content: ""; }
 /* タイトルのジュエル残高（右上） */
-.title-jewel { position: absolute; top: 16px; right: 16px; z-index: 12; }
+.title-jewel { position: absolute; top: 16px; left: 50%; transform: translateX(-50%); z-index: 12; }
+/* タイトル隅のボタン（左上＝タイムアタック／右上＝おたから図鑑） */
+#titleScreen .title-corner {
+  position: absolute; top: 14px; bottom: auto; left: auto; right: auto; z-index: 12;
+  transform: none; animation: none;
+  font-size: clamp(13px, 2.5vw, 20px); padding: 10px 16px;
+}
+#titleScreen .title-corner.tc-left  { left: 14px; }
+#titleScreen .title-corner.tc-right { right: 14px; }
+#titleScreen .title-corner:active { transform: translateY(4px); }
 /* プレイ中のジュエル残高（左上・宝石カウンターの下） */
 .play-jewel { position: absolute; top: 62px; left: 16px; }
 
@@ -2137,11 +2146,12 @@ html, body {
       <span class="gem" style="--gc:#7ad0ff; --gs:24px"></span>
       <span class="jewel-amount">0</span>
     </div>
+    <!-- 左上：タイムアタック／右上：おたから図鑑 -->
+    <button class="big-btn cover-timeattack title-corner tc-left" id="timeAttackBtn">⏱️ タイムアタック</button>
+    <button class="big-btn zukan-open title-corner tc-right" id="zukanBtn">📖 おたから図鑑</button>
     <div class="title-menu">
       <button class="big-btn cover-start" id="startBtn">🚂 ふつうの冒険</button>
-      <button class="big-btn cover-timeattack" id="timeAttackBtn">⏱️ タイムアタック（1分間）</button>
       <button class="big-btn shop-open" id="shopBtn">💎 ジュエルショップ</button>
-      <button class="big-btn zukan-open" id="zukanBtn">📖 おたから図鑑</button>
       <button class="secret-open" id="secretBtn">🔑 ひみつのあいことば</button>
     </div>
     <!-- 隠しコマンド：九九モードの「ひみつの呪文」は、タイトルロゴを2秒以内に5回タップで開く -->
