@@ -98,9 +98,26 @@ html, body {
    .big-btn:active より後に定義される＆ID指定で詳細度を上げて確実に勝たせる */
 #titleScreen .cover-start:active { transform: translateX(-50%) translateY(4px); animation: none; }
 @keyframes startPulse {
-  0%,100% { transform: translateX(-50%) scale(1); }
-  50%     { transform: translateX(-50%) scale(1.06); }
+  0%,100% { transform: scale(1); }
+  50%     { transform: scale(1.06); }
 }
+/* タイトルのボタンを縦に積むメニュー（はみ出さないように flex で自動配置） */
+.title-menu {
+  position: absolute; left: 0; right: 0; bottom: 3.5%;
+  z-index: 10; display: flex; flex-direction: column; align-items: center;
+  gap: clamp(7px, 1.4vh, 13px); padding: 0 14px;
+}
+/* メニュー内ボタンは絶対配置・translateX を解除（flow に戻す） */
+.title-menu .big-btn,
+.title-menu .secret-open {
+  position: static; bottom: auto; left: auto; right: auto; margin: 0;
+}
+.title-menu .cover-start,
+.title-menu .cover-timeattack,
+.title-menu .shop-open,
+.title-menu .zukan-open { transform: none; }
+#titleScreen .title-menu .big-btn:active,
+#titleScreen .title-menu .secret-open:active { transform: translateY(4px); animation: none; }
 
 /* 画面中央にのせる文字・ボタンのまとまり */
 .title-content {
@@ -1113,9 +1130,16 @@ html, body {
 .play-jewel { position: absolute; top: 62px; left: 16px; }
 
 /* タイトルのショップボタン */
+.cover-timeattack {
+  position: absolute; left: 50%; bottom: calc(7% - 76px); transform: translateX(-50%);
+  z-index: 10; background: linear-gradient(180deg,#ff7a8a,#e8455f);
+  box-shadow: 0 7px 0 #a8273c, 0 10px 22px rgba(0,0,0,.4);
+  font-size: clamp(18px, 3.4vw, 30px); padding: 15px 40px;
+}
+#titleScreen .cover-timeattack:active { box-shadow: 0 2px 0 #a8273c; transform: translateX(-50%) translateY(5px); }
 .shop-open {
   position: absolute;
-  bottom: calc(7% - 76px);
+  bottom: calc(7% - 152px);
   left: 50%;
   transform: translateX(-50%);
   z-index: 10;
@@ -1463,7 +1487,7 @@ html, body {
 
 /* タイトルの図鑑ボタン */
 .zukan-open {
-  position: absolute; bottom: calc(7% - 150px); left: 50%; transform: translateX(-50%);
+  position: absolute; bottom: calc(7% - 228px); left: 50%; transform: translateX(-50%);
   z-index: 10; background: #6a8fd8; box-shadow: 0 7px 0 #415f95, 0 10px 22px rgba(0,0,0,.4);
   font-size: clamp(18px,3.2vw,28px); padding: 14px 38px;
 }
@@ -1619,7 +1643,7 @@ html, body {
    合言葉システム（特別背景テーマ）
    =========================================================== */
 .secret-open {
-  position: absolute; bottom: calc(7% - 222px); left: 50%; transform: translateX(-50%);
+  position: absolute; bottom: calc(7% - 300px); left: 50%; transform: translateX(-50%);
   z-index: 10; background: #b07cd8; color:#fff; font-family:inherit; font-weight:900;
   border:none; border-radius:999px; cursor:pointer;
   box-shadow: 0 6px 0 #7c4aa6, 0 9px 20px rgba(0,0,0,.4);
@@ -2001,6 +2025,99 @@ html, body {
 .ku-title { font-size: clamp(22px,5vw,38px); font-weight: 900; margin-top: 4px; text-shadow: 0 3px 0 rgba(0,0,0,.4); }
 .ku-sub { font-size: clamp(14px,3vw,20px); font-weight: 700; color: #e7dcff; margin-top: 6px; }
 .ku-close { margin-top: 16px; background:#34c759; box-shadow:0 7px 0 #1f8c3c, 0 10px 22px rgba(0,0,0,.4); }
+
+/* ===========================================================
+   タイムアタック：プレイ中UI
+   =========================================================== */
+.ta-timer { display: none; }
+.score-ta { display: none; }
+#playScreen.time-attack .score-normal { display: none; }
+#playScreen.time-attack .score-ta { display: inline; }
+#playScreen.time-attack .ta-timer { display: flex; }
+#playScreen.time-attack .timer-wrap { display: none; }            /* 10秒バーは使わない */
+#playScreen.time-attack .top-hud { top: 92px; }                    /* 問題文を大タイマーの下へ */
+.ta-timer {
+  position: absolute; top: 8px; left: 50%; transform: translateX(-50%);
+  z-index: 35; align-items: center; gap: 8px;
+  background: rgba(20,12,34,.78); border: 3px solid #ffd24d; border-radius: 16px;
+  padding: 4px 22px; box-shadow: 0 6px 20px rgba(0,0,0,.5);
+}
+.ta-clock { font-size: clamp(26px,5vw,40px); }
+.ta-time {
+  font-size: clamp(34px,8vw,60px); font-weight: 900; color: #fff; line-height: 1;
+  font-variant-numeric: tabular-nums; letter-spacing: 1px;
+  text-shadow: 0 0 14px rgba(255,210,77,.7);
+}
+.ta-timer.danger { border-color: #ff4d6d; animation: taTimerBlink .5s steps(1) infinite; }
+.ta-timer.danger .ta-time { color: #ff8a9c; }
+@keyframes taTimerBlink { 50% { opacity: .5; } }
+.ta-penalty {
+  position: absolute; left: 50%; top: 38%; transform: translate(-50%,-50%);
+  z-index: 12; font-size: 7cqw; font-weight: 900; color: #ff5d6c; white-space: nowrap;
+  -webkit-text-stroke: .4cqw #fff; text-shadow: 0 0 2cqw rgba(255,80,100,.8);
+  animation: taPenalty .7s ease-out forwards; pointer-events: none;
+}
+@keyframes taPenalty {
+  0% { opacity: 0; transform: translate(-50%,-30%) scale(.6); }
+  25% { opacity: 1; transform: translate(-50%,-50%) scale(1.1); }
+  100% { opacity: 0; transform: translate(-50%,-80%) scale(1); }
+}
+
+/* ===========================================================
+   タイムアタック：記録証（リザルト画面）
+   =========================================================== */
+#taResultScreen {
+  z-index: 45; overflow: hidden;
+  background: radial-gradient(circle at 50% 30%, #3a2570 0%, #1a1030 70%, #0d0820 100%);
+  /* 表示/非表示は .screen / .screen.active に任せる（display は上書きしない） */
+}
+/* スポットライト（回転する光のすじ） */
+.ta-spotlight {
+  position: absolute; left: 50%; top: -20%; width: 160%; height: 160%;
+  transform: translateX(-50%);
+  background: conic-gradient(from 0deg,
+    rgba(255,255,255,0) 0deg, rgba(255,240,180,.16) 18deg, rgba(255,255,255,0) 36deg,
+    rgba(255,255,255,0) 90deg, rgba(180,220,255,.14) 108deg, rgba(255,255,255,0) 126deg,
+    rgba(255,255,255,0) 180deg, rgba(255,240,180,.16) 198deg, rgba(255,255,255,0) 216deg,
+    rgba(255,255,255,0) 270deg, rgba(180,220,255,.14) 288deg, rgba(255,255,255,0) 306deg);
+  animation: taSpot 14s linear infinite; pointer-events: none;
+}
+@keyframes taSpot { to { transform: translateX(-50%) rotate(360deg); } }
+/* 紙吹雪 */
+.ta-confetti { position: absolute; inset: 0; pointer-events: none; overflow: hidden; }
+.ta-confetti i { position: absolute; top: -6%; width: 10px; height: 16px; border-radius: 2px; opacity: .95; animation: confFall linear infinite; }
+/* 記録カード */
+.ta-card {
+  position: relative; z-index: 2; text-align: center; color: #fff;
+  width: min(92%, 560px);
+  background: linear-gradient(180deg, rgba(58,37,110,.92), rgba(33,18,67,.94));
+  border: 5px solid #ffd24d; border-radius: 28px; padding: 22px 26px 26px;
+  box-shadow: 0 18px 60px rgba(0,0,0,.7), 0 0 50px rgba(255,210,77,.4);
+  animation: unlockPop .6s cubic-bezier(.2,1.6,.4,1) both;
+}
+.ta-card::before {
+  content:""; position:absolute; inset:-7px; border-radius:32px; z-index:-1;
+  background: conic-gradient(from 0deg,#ff5d6c,#ffd24d,#7dff9b,#5dc8ff,#b15dff,#ff5d6c);
+  filter: blur(9px); opacity:.65; animation: diaShine 3s linear infinite;
+}
+.ta-card-head { font-size: clamp(18px,3.8vw,26px); font-weight: 900; color: #ffe9a8; }
+.ta-record-label { font-size: clamp(15px,3vw,20px); font-weight: 800; color: #cfe8ff; margin-top: 8px; }
+.ta-record { line-height: 1; margin: 2px 0 6px; }
+.ta-num {
+  font-size: clamp(70px,20vw,150px); font-weight: 900; color: #ffe14d;
+  -webkit-text-stroke: 4px #a8331f; text-shadow: 0 0 28px rgba(255,225,77,.9);
+}
+.ta-unit { font-size: clamp(24px,6vw,44px); font-weight: 900; color: #fff; margin-left: 4px; }
+.ta-jewels { font-size: clamp(16px,3.4vw,24px); font-weight: 800; color: #9be7ff; margin: 4px 0 12px; }
+.ta-jewels b { color: #ffd24d; font-size: 1.15em; }
+.ta-shot {
+  font-size: clamp(14px,3vw,20px); font-weight: 800; color: #fff; line-height: 1.5;
+  background: rgba(255,255,255,.12); border: 2px dashed rgba(255,255,255,.5);
+  border-radius: 14px; padding: 10px 12px; margin-bottom: 16px;
+}
+.ta-btns { display: flex; gap: 12px; justify-content: center; }
+.ta-again { background:#34c759; box-shadow:0 7px 0 #1f8c3c, 0 10px 22px rgba(0,0,0,.4); }
+.ta-home  { background:#ff7a8a; box-shadow:0 7px 0 #a8273c, 0 10px 22px rgba(0,0,0,.4); }
 </style>
 </head>
 <body>
@@ -2018,10 +2135,13 @@ html, body {
       <span class="gem" style="--gc:#7ad0ff; --gs:24px"></span>
       <span class="jewel-amount">0</span>
     </div>
-    <button class="big-btn cover-start" id="startBtn">スタート</button>
-    <button class="big-btn shop-open" id="shopBtn">💎 ジュエルショップ</button>
-    <button class="big-btn zukan-open" id="zukanBtn">📖 おたから図鑑</button>
-    <button class="secret-open" id="secretBtn">🔑 ひみつのあいことば</button>
+    <div class="title-menu">
+      <button class="big-btn cover-start" id="startBtn">🚂 ふつうの冒険</button>
+      <button class="big-btn cover-timeattack" id="timeAttackBtn">⏱️ タイムアタック（1分間）</button>
+      <button class="big-btn shop-open" id="shopBtn">💎 ジュエルショップ</button>
+      <button class="big-btn zukan-open" id="zukanBtn">📖 おたから図鑑</button>
+      <button class="secret-open" id="secretBtn">🔑 ひみつのあいことば</button>
+    </div>
     <!-- 隠しコマンド：九九モードの「ひみつの呪文」は、タイトルロゴを2秒以内に5回タップで開く -->
   </section>
 
@@ -2222,7 +2342,7 @@ html, body {
           <div class="timer-bar" id="timerBar"></div>
         </div>
       </div>
-      <div class="score">もんだい <span class="num" id="stageNum">1</span>/10</div>
+      <div class="score"><span class="score-normal">もんだい <span class="num" id="stageNum">1</span>/10</span><span class="score-ta" id="taScoreText"></span></div>
       <!-- 集めた宝石カウンター（今回のラン） -->
       <div class="gem-hud">
         <span class="gem" style="--gc:#4d8bff; --gs:26px"></span>
@@ -2253,6 +2373,9 @@ html, body {
         </div>
       </div>
     </div>
+
+    <!-- タイムアタック：残り時間の大カウントダウン（画面上部） -->
+    <div class="ta-timer" id="taTimer"><span class="ta-clock">⏱️</span><span class="ta-time" id="taTime">1:00</span></div>
 
     <!-- しっかり入力モード：ミニテンキー（画面下部） -->
     <div class="keypad" id="keypad">
@@ -2316,6 +2439,23 @@ html, body {
     </div>
   </section>
 
+  <!-- ============ タイムアタック：記録証（リザルト） ============ -->
+  <section id="taResultScreen" class="screen">
+    <div class="ta-spotlight"></div>
+    <div class="ta-confetti" id="taConfetti"></div>
+    <div class="ta-card">
+      <div class="ta-card-head">⏱️ タイムアタック きろくしょう</div>
+      <div class="ta-record-label">きろく</div>
+      <div class="ta-record"><span class="ta-num" id="taResultNum">0</span><span class="ta-unit">問せいかい！！</span></div>
+      <div class="ta-jewels">💎 ゲットしたジュエル：<b id="taResultJewels">0</b></div>
+      <div class="ta-shot">📸 このがめんを スクリーンショットして、せんせいに おくろう！</div>
+      <div class="ta-btns">
+        <button class="big-btn ta-again" id="taAgainBtn">もう1回！</button>
+        <button class="big-btn ta-home" id="taHomeBtn">表紙へ戻る</button>
+      </div>
+    </div>
+  </section>
+
 </div>
 
 <script>
@@ -2328,6 +2468,7 @@ const screens = {
   over:  document.getElementById('overScreen'),
   clear: document.getElementById('clearScreen'),
   shop:  document.getElementById('shopScreen'),
+  taResult: document.getElementById('taResultScreen'),
 };
 function showScreen(name) {
   Object.values(screens).forEach(s => s.classList.remove('active'));
@@ -2365,6 +2506,15 @@ let bossRockDeadline = 0;
 let inputMode = 'choice';
 let jewelMultiplier = 1.0;        // 報酬倍率（しっかり=1.0 / えらんで=0.33）
 let typedValue = '';              // しっかりモードで入力中の数字
+
+/* タイムアタック（1分間で何問解けるか） */
+const TIME_ATTACK_MS = 60000;     // 制限時間60秒
+const TA_PENALTY_MS  = 2000;      // まちがえたときの少しのタイムロス
+let timeAttackMode = false;
+let timeAttackScore = 0;          // 正解数
+let timeAttackDeadline = 0;
+let taEndId = null, taTickId = null;
+let lastTAEarned = 0;             // 記録証に出す獲得ジュエル
 
 /* 出題の種類：'subtraction'（ひっ算） / 'multiply'（かけ算＝九九） */
 let gameSubject = 'subtraction';
@@ -2635,6 +2785,7 @@ function awardJewels() {
     if (armedDouble) g *= 2;             // ジュエル2倍チケットは倍率適用後の最終値にかける
     save.jewels += g; persist(); updateJewelUI();
   }
+  return g;
 }
 /* 装備中のカスタマイズをコックピットに反映 */
 function applyCosmetics() {
@@ -3253,14 +3404,16 @@ function clearTimers() {
    問題の表示
    =========================================================== */
 function nextProblem() {
-  // ボス岩バトル中も「既存の2年生向けロジック」をそのまま使う（学年を超えた問題は出さない）
-  current = makeProblem(stage);
+  // タイムアタックは難易度を正解数でゆるやかに上げる（10問目のラスボス問題は出さない）
+  const probStage = timeAttackMode ? Math.min(9, 1 + Math.floor(timeAttackScore / 4)) : stage;
+  // 既存の2年生向けロジックをそのまま使う（学年を超えた問題は出さない）
+  current = makeProblem(probStage);
   locked = false;
   qStartAt = performance.now();
 
   elStageNum.textContent = stage;
   elQuestion.textContent = `${current.a} ${current.op || '−'} ${current.b} = ?`;
-  if (!bossRockActive) {
+  if (!bossRockActive && !timeAttackMode) {
     setTier(stage); // 背景の禍々しさを更新
     // 10問目だけラスボス登場、それ以外は退場
     if (stage >= TOTAL_STAGES) startBoss();
@@ -3284,7 +3437,8 @@ function nextProblem() {
     clearTyped();
   }
 
-  if (!bossRockActive) startTimer(); // 制限時間（10秒）スタート。ボス岩中は30秒の専用タイマーが支配
+  // タイムアタック中・ボス岩中は1問ごとの10秒タイマーは使わない（全体のタイマーが支配）
+  if (!bossRockActive && !timeAttackMode) startTimer();
 }
 
 /* ふりかえり用：間違えた問題を記録（重複は登録しない） */
@@ -3316,6 +3470,27 @@ function resolveAnswer(isCorrect) {
   if (locked || !current) return;
   locked = true;
   clearTimers();
+
+  // ===== タイムアタック：ゲームオーバーなし。何問解けるかを競う =====
+  if (timeAttackMode) {
+    if (isCorrect) {
+      timeAttackScore++;
+      elPlay.style.setProperty('--combo', Math.min(timeAttackScore, 10));
+      collectGem();                 // 宝石（＆フィーバーなら虹ダイヤ）
+      blastObstacle();
+      if (save.owned.includes('sword_special')) swordSlash();
+      maybeStartFever();
+      elFlash.classList.add('show');
+      setTimeout(() => elFlash.classList.remove('show'), 300);
+    } else {
+      recordWrong();                // ふりかえりに記録
+      timeAttackDeadline -= TA_PENALTY_MS;   // 少しのタイムロス（ゲームオーバーにはしない）
+      taPenaltyFlash();             // 赤いフラッシュ
+    }
+    updateTimeAttackUI();
+    setTimeout(() => { if (timeAttackMode) nextProblem(); }, 280);
+    return;
+  }
 
   if (isCorrect) {
     // ===== 正解 =====
@@ -3685,6 +3860,92 @@ function endBossRock() {
   const ov = document.getElementById('bossRock'); if (ov) ov.remove();
 }
 
+/* ===========================================================
+   タイムアタック（1分間で何問解けるか）
+   =========================================================== */
+function startTimeAttack() {
+  initAudio();
+  timeAttackMode = true;
+  timeAttackScore = 0;
+  totalTimeMs = 0;
+  wrongList = [];
+  gemCounts = {}; gemTotal = 0; rainbowCount = 0;
+  armedShield = false; armedDouble = false; shieldUsed = false; shieldEquippedThisGame = false;
+  elPlay.style.setProperty('--combo', 0);
+  endFever(); endBossRock(); stopBoss();
+  document.getElementById('gemCount').textContent = 0;
+  updateJewelUI();
+  applyCosmetics();
+  updateActiveItems();
+  elPlay.classList.remove('crash');
+  elPlay.classList.add('time-attack');
+  applyInputModeUI();
+  showScreen('play');
+  timeAttackDeadline = performance.now() + TIME_ATTACK_MS;
+  taTick();
+  clearTimeout(taEndId);
+  taEndId = setTimeout(endTimeAttack, TIME_ATTACK_MS);
+  updateTimeAttackUI();
+  nextProblem();
+}
+function taTick() {
+  clearInterval(taTickId);
+  const update = () => {
+    const remain = Math.max(0, timeAttackDeadline - performance.now());
+    const sec = Math.ceil(remain / 1000);
+    const el = document.getElementById('taTime');
+    if (el) el.textContent = Math.floor(sec / 60) + ':' + String(sec % 60).padStart(2, '0');
+    document.getElementById('taTimer').classList.toggle('danger', remain <= 10000);
+    if (remain <= 0) endTimeAttack();
+  };
+  update();
+  taTickId = setInterval(update, 100);
+}
+function updateTimeAttackUI() {
+  // 「せいかい N もん」を表示（#stageNum は壊さない）
+  const el = document.getElementById('taScoreText');
+  if (el) el.innerHTML = `せいかい <span class="num">${timeAttackScore}</span>もん`;
+}
+function taPenaltyFlash() {
+  const st = document.querySelector('.play-stage');
+  if (!st) return;
+  const f = document.createElement('div');
+  f.className = 'ta-penalty';
+  f.textContent = '−2びょう…';
+  st.appendChild(f);
+  setTimeout(() => f.remove(), 700);
+}
+function endTimeAttack() {
+  if (!timeAttackMode) return;
+  timeAttackMode = false;
+  clearTimeout(taEndId); taEndId = null;
+  clearInterval(taTickId); taTickId = null;
+  clearTimers();
+  endFever();
+  elPlay.classList.remove('time-attack');
+  lastTAEarned = awardJewels();   // 集めた宝石をジュエルに換金（記録証に表示）
+  showTimeAttackResult();
+}
+function showTimeAttackResult() {
+  document.getElementById('taResultNum').textContent = timeAttackScore;
+  document.getElementById('taResultJewels').textContent = lastTAEarned;
+  showScreen('taResult');
+  // キラキラ紙吹雪
+  const layer = document.getElementById('taConfetti');
+  layer.innerHTML = '';
+  const cols = ['#ff5d6c','#ffd24d','#7dff9b','#5dc8ff','#b15dff','#ff9ad2'];
+  for (let i = 0; i < 90; i++) {
+    const c = document.createElement('i');
+    c.style.left = Math.random() * 100 + '%';
+    c.style.background = cols[i % cols.length];
+    c.style.animationDuration = (1.8 + Math.random() * 2) + 's';
+    c.style.animationDelay = (Math.random() * 1.2) + 's';
+    c.style.transform = `rotate(${Math.random() * 360}deg)`;
+    layer.appendChild(c);
+  }
+  playFanfare();
+}
+
 /* 全問クリア */
 function winGame() {
   clearTimers();
@@ -3804,6 +4065,8 @@ function startGame() {
   gemCounts = {}; gemTotal = 0; rainbowCount = 0;  // 宝石コレクションをリセット
   endFever();                       // フィーバー状態をリセット
   endBossRock(); bossRockHits = 0;  // ボス岩状態をリセット
+  timeAttackMode = false; clearTimeout(taEndId); clearInterval(taTickId);
+  elPlay.classList.remove('time-attack');
   document.getElementById('gemCount').textContent = 0;
   updateJewelUI();                  // おさいふ残高を表示
   applyCosmetics();                 // 装備中のカスタマイズを反映
@@ -3824,9 +4087,12 @@ function applyInputModeUI() {
   clearTyped();
 }
 
-/* プレイ開始の入口：まず入力モードを選ぶ */
+/* プレイ開始の入口：まず（九九があれば）ジャンル → 入力モードを選ぶ */
 let itemArmSel = {};
-function beginGame() {
+let pendingTimeAttack = false;
+function beginGame()       { pendingTimeAttack = false; beginFlow(); }
+function beginTimeAttack() { pendingTimeAttack = true;  beginFlow(); }
+function beginFlow() {
   initAudio();
   // 九九が1つでも解放されていれば、まず「ひっ算 / かけ算」を選ぶ
   if (save.unlockedKukuStages.length > 0) openSubjectModal();
@@ -3857,8 +4123,9 @@ function setInputMode(mode) {
   document.getElementById('modeModal').classList.remove('show');
   proceedAfterMode();
 }
-/* モード決定後：消費アイテムがあれば選択モーダル、なければ即スタート */
+/* モード決定後：タイムアタックなら即開始／通常はアイテム選択 or スタート */
 function proceedAfterMode() {
+  if (pendingTimeAttack) { startTimeAttack(); return; }   // タイムアタックはアイテムなしの純粋勝負
   const hasItems = SHOP.some(i => i.cat === 'consumable' && itemCount(i.id) > 0);
   if (hasItems) { openItemModal(); }
   else { armedShield = false; armedDouble = false; shieldUsed = false; shieldEquippedThisGame = false; startGame(); }
@@ -3903,8 +4170,11 @@ function consumeUsedItems() {
    イベント登録
    =========================================================== */
 document.getElementById('startBtn').addEventListener('click', beginGame);
+document.getElementById('timeAttackBtn').addEventListener('click', beginTimeAttack);
 document.getElementById('retryBtn').addEventListener('click', beginGame);
 document.getElementById('clearRetryBtn').addEventListener('click', beginGame);
+document.getElementById('taAgainBtn').addEventListener('click', beginTimeAttack);
+document.getElementById('taHomeBtn').addEventListener('click', () => showScreen('title'));
 document.getElementById('clearHomeBtn').addEventListener('click', () => showScreen('title'));
 document.getElementById('overHomeBtn').addEventListener('click', () => showScreen('title'));
 document.getElementById('shopBtn').addEventListener('click', openShop);
